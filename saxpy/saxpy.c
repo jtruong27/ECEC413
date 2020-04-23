@@ -18,6 +18,18 @@
 #include <math.h>
 #include <pthread.h>
 
+/* Data Structure defining what to pass to each worker thread */
+typedef struct thread_data_s {
+	int tid;              /* thread id */
+	int num_threads;      /* number of threads in the working pool */
+	int num_elements;     /* number of elements in the vector */
+	float a;              /* pointer to a */
+	float *x;             /* pointer to x */
+	float *y;             /* pointer to y */
+	int offset;           /* starting offset for each thread within the vector */
+	int chunk_size;       /* chunk size */
+} thread_data_t;
+
 /* Function prototypes */
 void compute_gold(float *, float *, float, int);
 void compute_using_pthreads_v1(float *, float *, float, int, int);
@@ -27,10 +39,10 @@ int check_results(float *, float *, int, float);
 int main(int argc, char **argv)
 {
 	if (argc < 3) {
-		fprintf(stderr, "Usage: %s num-elements num-threads\n", argv[0]);
+	fprintf(stderr, "Usage: %s num-elements num-threads\n", argv[0]);
         fprintf(stderr, "num-elements: Number of elements in the input vectors\n");
         fprintf(stderr, "num-threads: Number of threads\n");
-		exit(EXIT_FAILURE);
+	exit(EXIT_FAILURE);
 	}
 	
     int num_elements = atoi(argv[1]); 
@@ -40,7 +52,7 @@ int main(int argc, char **argv)
     fprintf(stderr, "Generating input vectors\n");
     int i;
 	float *x = (float *)malloc(sizeof(float) * num_elements);
-    float *y1 = (float *)malloc(sizeof(float) * num_elements);              /* For the reference version */
+    	float *y1 = (float *)malloc(sizeof(float) * num_elements);              /* For the reference version */
 	float *y2 = (float *)malloc(sizeof(float) * num_elements);              /* For pthreads version 1 */
 	float *y3 = (float *)malloc(sizeof(float) * num_elements);              /* For pthreads version 2 */
 
@@ -48,8 +60,8 @@ int main(int argc, char **argv)
 	for (i = 0; i < num_elements; i++) {
 		x[i] = rand()/(float)RAND_MAX - 0.5;
 		y1[i] = rand()/(float)RAND_MAX - 0.5;
-        y2[i] = y1[i]; /* Make copies of y1 for y2 and y3 */
-        y3[i] = y1[i]; 
+        	y2[i] = y1[i]; /* Make copies of y1 for y2 and y3 */
+        	y3[i] = y1[i]; 
 	}
 
     float a = 2.5;  /* Choose some scalar value for a */
@@ -101,7 +113,7 @@ int main(int argc, char **argv)
 	/* Free memory */ 
 	free((void *)x);
 	free((void *)y1);
-    free((void *)y2);
+    	free((void *)y2);
 	free((void *)y3);
 
     exit(EXIT_SUCCESS);
@@ -111,14 +123,63 @@ int main(int argc, char **argv)
 void compute_gold(float *x, float *y, float a, int num_elements)
 {
 	int i;
-    for (i = 0; i < num_elements; i++)
-        y[i] = a * x[i] + y[i]; 
+	for (i = 0; i < num_elements; i++)
+		y[i] = a * x[i] + y[i]; 
 }
 
 /* Calculate SAXPY using pthreads, version 1. Place result in the Y vector */
 void compute_using_pthreads_v1(float *x, float *y, float a, int num_elements, int num_threads)
 {
     /* FIXME: Complete this function */
+	pthread_t *tid = malloc(num_threads * sizeof(pthread_t)); /* data structure to store the thread */
+	pthread_attr_t atrributes; /* thread attribute */
+	phtread_attr_init(&attributes); /* initialize thread attribute to default values */
+	
+	int i;
+	int chunk_size = (int)floor((float)num_elements/(float)num_threads); /* compute chunk size */
+	
+	thread_data_t *thread_data = malloc(sizeof(thread_data_t) * num_threads);
+	for (i=0; i < num_threads; i++) 
+	{
+		thread_data[i].tid = i;
+		thread_data[i].num_threads = num_threads;
+		thread_data[i].elements = elements;
+		thread_data[i].a = a;
+		thread_data[i].x = x;
+		thread_data[i].y = y;
+		thread_data[i].offset = i * chunk_size;
+		thread_data[i].chunk_size = chunk_size;	
+	}
+	
+	for (i = 0; i < num_threads; i++)
+		pthread_create(&tid, &attributes, dot_product, (void *)&thread_data[i]);
+	
+	/* joint point: wait for the workers to finish */
+	for (i = 0; i < num_threads; i++)
+		pthread_join(tid[i], NULL);
+	
+	/* free allocated data structures */
+	free(thread_data);
+	free(tid);
+}
+
+/* functuon to excute by each thread to compute the overall chunk method for saxpy */
+void *chunk_mehtod(void *args) 
+{
+	/* typecast argument a a pointer to the thread_data_t structure */
+	thread_data_t *thread_data = (thread_data_t *)args;
+	
+	/* compute the chunk method that this thread is responsible for */
+	if (thread_data->tid < (thread_data->num_threads - 1)) {
+		for (int i = thread_data->offset; i < (thread_data->offset + thread_data->chunk_size); i++)
+			thread_data->y[i] = thread_data->a * thread_data->x[i] + thread_data->y[i];
+	}
+	else { /* take care of the number of elements that the final thread must process */
+		for int i = thread_data->offset; i < thread_data->num_elements; i++)
+			thread_data->y[i] = thread_data->a * thread_data->x[i] + thread_data->y[i];
+	}
+	
+	pthread_exit(NULL);
 }
 
 /* Calculate SAXPY using pthreads, version 2. Place result in the Y vector */
