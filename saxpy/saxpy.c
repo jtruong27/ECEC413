@@ -136,7 +136,7 @@ void compute_using_pthreads_v1(float *x, float *y, float a, int num_elements, in
 	phtread_attr_init(&attributes); /* initialize thread attribute to default values */
 	
 	int i;
-	int chunk_size = (int)floor((float)num_elements/(float)num_threads); /* compute chunk size */
+	int chunk_size = (int)floor((float)num_elements / (float)num_threads); /* compute chunk size */
 	
 	thread_data_t *thread_data = malloc(sizeof(thread_data_t) * num_threads);
 	for (i=0; i < num_threads; i++) 
