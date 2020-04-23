@@ -143,7 +143,7 @@ void compute_using_pthreads_v1(float *x, float *y, float a, int num_elements, in
 	{
 		thread_data[i].tid = i;
 		thread_data[i].num_threads = num_threads;
-		thread_data[i].elements = elements;
+		thread_data[i].num_elements = num_elements;
 		thread_data[i].a = a;
 		thread_data[i].x = x;
 		thread_data[i].y = y;
@@ -152,7 +152,7 @@ void compute_using_pthreads_v1(float *x, float *y, float a, int num_elements, in
 	}
 	
 	for (i = 0; i < num_threads; i++)
-		pthread_create(&tid, &attributes, dot_product, (void *)&thread_data[i]);
+		pthread_create(&tid[i], &attributes, chunk_method, (void *)&thread_data[i]);
 	
 	/* joint point: wait for the workers to finish */
 	for (i = 0; i < num_threads; i++)
