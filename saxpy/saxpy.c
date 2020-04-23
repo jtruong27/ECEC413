@@ -23,9 +23,9 @@ typedef struct thread_data_s {
 	int tid;              /* thread id */
 	int num_threads;      /* number of threads in the working pool */
 	int num_elements;     /* number of elements in the vector */
-	float a;              /* pointer to a */
-	float *x;             /* pointer to x */
-	float *y;             /* pointer to y */
+	float a;              /* pointer to scalar a */
+	float *x;             /* pointer to  vector x */
+	float *y;             /* pointer to vector y */
 	int offset;           /* starting offset for each thread within the vector */
 	int chunk_size;       /* chunk size */
 } thread_data_t;
@@ -166,7 +166,7 @@ void compute_using_pthreads_v1(float *x, float *y, float a, int num_elements, in
 /* functuon to excute by each thread to compute the overall chunk method for saxpy */
 void *chunk_mehtod(void *args) 
 {
-	/* typecast argument a a pointer to the thread_data_t structure */
+	/* typecast argument to a pointer to the thread_data_t structure */
 	thread_data_t *thread_data = (thread_data_t *)args;
 	
 	/* compute the chunk method that this thread is responsible for */
