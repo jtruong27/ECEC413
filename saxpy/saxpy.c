@@ -210,7 +210,7 @@ void compute_using_pthreads_v2(float *x, float *y, float a, int num_elements, in
     
     /* fork point: run parallel function */
     for (i = 0; i < num_threads; i++)
-        pthread_create(&tid[i], &attributes, chunk_method, (void *)&thread_data[i]);
+        pthread_create(&tid[i], &attributes, stride_method, (void *)&thread_data[i]);
     
     /* joint point: wait for the workers to finish */
     for (i = 0; i < num_threads; i++)
