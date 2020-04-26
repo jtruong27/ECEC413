@@ -2,13 +2,13 @@ Run 1
 Generating input vectors
 
 Calculating SAXPY using reference solution
-Execution time = 0.121081s
+Execution time = 0.281667s
 
 Calculating SAXPY using pthreads, version 1
-Execution time = 0.106558s
+Execution time = 0.172012s
 
 Calculating SAXPY using pthreads, version 2
-Execution time = 0.096333s
+Execution time = 0.357218s
 
 Checking results for correctness
 TEST PASSED
@@ -17,13 +17,13 @@ Run 2
 Generating input vectors
 
 Calculating SAXPY using reference solution
-Execution time = 0.487408s
+Execution time = 0.302953s
 
 Calculating SAXPY using pthreads, version 1
-Execution time = 0.114162s
+Execution time = 0.180601s
 
 Calculating SAXPY using pthreads, version 2
-Execution time = 0.100340s
+Execution time = 0.355303s
 
 Checking results for correctness
 TEST PASSED
@@ -32,13 +32,13 @@ Run 3
 Generating input vectors
 
 Calculating SAXPY using reference solution
-Execution time = 0.119081s
+Execution time = 0.247751s
 
 Calculating SAXPY using pthreads, version 1
-Execution time = 0.098196s
+Execution time = 0.102655s
 
 Calculating SAXPY using pthreads, version 2
-Execution time = 0.088897s
+Execution time = 0.351194s
 
 Checking results for correctness
 TEST PASSED
@@ -47,13 +47,13 @@ Run 4
 Generating input vectors
 
 Calculating SAXPY using reference solution
-Execution time = 0.308426s
+Execution time = 0.306591s
 
 Calculating SAXPY using pthreads, version 1
-Execution time = 0.160385s
+Execution time = 0.174858s
 
 Calculating SAXPY using pthreads, version 2
-Execution time = 0.131733s
+Execution time = 0.356077s
 
 Checking results for correctness
 TEST PASSED
@@ -62,13 +62,13 @@ Run 5
 Generating input vectors
 
 Calculating SAXPY using reference solution
-Execution time = 0.496167s
+Execution time = 0.242788s
 
 Calculating SAXPY using pthreads, version 1
-Execution time = 0.110492s
+Execution time = 0.172206s
 
 Calculating SAXPY using pthreads, version 2
-Execution time = 0.098309s
+Execution time = 0.353321s
 
 Checking results for correctness
 TEST PASSED
@@ -77,13 +77,13 @@ Run 6
 Generating input vectors
 
 Calculating SAXPY using reference solution
-Execution time = 0.121829s
+Execution time = 0.305421s
 
 Calculating SAXPY using pthreads, version 1
-Execution time = 0.098953s
+Execution time = 0.172379s
 
 Calculating SAXPY using pthreads, version 2
-Execution time = 0.095899s
+Execution time = 0.360665s
 
 Checking results for correctness
 TEST PASSED
@@ -92,13 +92,13 @@ Run 7
 Generating input vectors
 
 Calculating SAXPY using reference solution
-Execution time = 0.300460s
+Execution time = 0.273164s
 
 Calculating SAXPY using pthreads, version 1
-Execution time = 0.163043s
+Execution time = 0.178496s
 
 Calculating SAXPY using pthreads, version 2
-Execution time = 0.091754s
+Execution time = 0.350537s
 
 Checking results for correctness
 TEST PASSED
@@ -107,13 +107,13 @@ Run 8
 Generating input vectors
 
 Calculating SAXPY using reference solution
-Execution time = 0.491608s
+Execution time = 0.308163s
 
 Calculating SAXPY using pthreads, version 1
-Execution time = 0.125594s
+Execution time = 0.125121s
 
 Calculating SAXPY using pthreads, version 2
-Execution time = 0.102482s
+Execution time = 0.389867s
 
 Checking results for correctness
 TEST PASSED
@@ -122,13 +122,13 @@ Run 9
 Generating input vectors
 
 Calculating SAXPY using reference solution
-Execution time = 0.282891s
+Execution time = 0.282950s
 
 Calculating SAXPY using pthreads, version 1
-Execution time = 0.170473s
+Execution time = 0.175676s
 
 Calculating SAXPY using pthreads, version 2
-Execution time = 0.099422s
+Execution time = 0.378587s
 
 Checking results for correctness
 TEST PASSED
@@ -137,13 +137,13 @@ Run 10
 Generating input vectors
 
 Calculating SAXPY using reference solution
-Execution time = 0.307339s
+Execution time = 0.282202s
 
 Calculating SAXPY using pthreads, version 1
-Execution time = 0.175609s
+Execution time = 0.165990s
 
 Calculating SAXPY using pthreads, version 2
-Execution time = 0.132720s
+Execution time = 0.325369s
 
 Checking results for correctness
 TEST PASSED
