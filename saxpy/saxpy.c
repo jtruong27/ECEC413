@@ -36,6 +36,7 @@ void compute_using_pthreads_v1(float *, float *, float, int, int);
 void compute_using_pthreads_v2(float *, float *, float, int, int);
 int check_results(float *, float *, int, float);
 void *chunk_method(void *);
+void *stride_method(void *);
 
 int main(int argc, char **argv)
 {
@@ -188,7 +189,52 @@ void *chunk_method(void *args)
 /* Calculate SAXPY using pthreads, version 2. Place result in the Y vector */
 void compute_using_pthreads_v2(float *x, float *y, float a, int num_elements, int num_threads)
 {
-    /* FIXME: Complete this function */
+    /* data structure to store the thread */
+    pthread_t *tid = malloc(num_threads * sizeof(pthread_t));
+    pthread_attr_t attributes; /* thread attribute */
+    pthread_attr_init(&attributes); /* initialize thread attribute to default values */
+    
+    int i;
+    
+    /* assign argument values for each thread */
+    thread_data_t *thread_data = malloc(sizeof(thread_data_t) * num_threads);
+    for (i=0; i < num_threads; i++) 
+    {
+        thread_data[i].tid = i;
+        thread_data[i].num_threads = num_threads;
+        thread_data[i].num_elements = num_elements;
+        thread_data[i].a = a;
+        thread_data[i].x = x;
+        thread_data[i].y = y;
+    }
+    
+    /* fork point: run parallel function */
+    for (i = 0; i < num_threads; i++)
+        pthread_create(&tid[i], &attributes, chunk_method, (void *)&thread_data[i]);
+    
+    /* joint point: wait for the workers to finish */
+    for (i = 0; i < num_threads; i++)
+        pthread_join(tid[i], NULL);
+    
+    /* free allocated data structures */
+    free(thread_data);
+    free(tid);
+}
+
+/* Calculate overall dot product */
+void *stride_method(void *args)
+{
+    thread_data_t *thread_data = (thread_data_t *)args; /* Typecast argument to pointer to thread_data_t structure */
+    int offset = thread_data->tid;
+    int stride = thread_data->num_threads;
+
+    /* stride over the input arguments */
+    while (offset < thread_data->num_elements) {
+        thread_data->y[offset] = thread_data->a * thread_data->x[offset] + thread_data->y[offset];
+        offset += stride;
+    }
+
+    pthread_exit(NULL);
 }
 
 /* Perform element-by-element check of vector if relative error is within specified threshold */
