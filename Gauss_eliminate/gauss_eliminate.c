@@ -15,7 +15,6 @@
 #include <math.h>
 #include <pthread.h>
 #include "gauss_eliminate.h"
-#include "barrier_MACOS.h"
 
 #define MIN_NUMBER 2
 #define MAX_NUMBER 50
