@@ -15,7 +15,7 @@
 #include <math.h>
 #include <pthread.h>
 #include "gauss_eliminate.h"
-
+#include "barrier_MACOS.h"
 
 #define MIN_NUMBER 2
 #define MAX_NUMBER 50
@@ -103,6 +103,13 @@ int main(int argc, char **argv)
     gettimeofday (&stop, NULL);
     fprintf(stderr, "Pthreads CPU run time = %0.3f s\n", (float)(stop.tv_sec - start.tv_sec\
       + (stop.tv_usec - start.tv_usec) / (float)1000000));
+
+      status = perform_simple_check(U_mt);	/* Check that principal diagonal elements are 1 for U matrix */
+      if (status < 0) {
+          fprintf(stderr, "Upper triangular matrix is incorrect. Exiting.\n");
+          exit(EXIT_FAILURE);
+      }
+      fprintf(stderr, "pthread Gaussian elimination was successful.\n");
 
     /* Check if pthread result matches reference solution within specified tolerance */
     fprintf(stderr, "\nChecking results\n");
