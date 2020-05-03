@@ -22,11 +22,12 @@
 #define NUM_THREADS 32                                  /* providing number of threads */
 
 /* Structure data type of p_threads arguments */
-typedef struct thread_args {
-    int tid;
-    Matrix *U;
+/* what is passing through each worker thread */
+typedef struct thread_data_s {
+    int tid;                  /* thread id */
+    Matrix *U;                /* pointer to Matrix *U */
 
-} THREAD_ARGS;
+} thread_data_t;
 
 /* Function prototypes */
 Matrix allocate_matrix(int, int, int);
@@ -124,17 +125,18 @@ void * gauss_compute_gold (void *args)
         unsigned int num_elements;
         unsigned int i, j, k;
 
-        THREAD_ARGS *m_thread = (THREAD_ARGS *) args;
-        num_elements = m_thread->U->num_rows;
-        U = m_thread->U->elements;
-        int tid = m_thread->tid;
+        /* assigning argument values for each thread */
+        thread_data_t *thread_data = (thread_data_t *) args;
+        num_elements = thread_data->U->num_rows;
+        U = thread_data->U->elements;
+        int tid = thread_data->tid;
 
         for (k = 0; k < num_elements; k++)
         {
             for (j = (k + tid + 1); j < num_elements; j+= NUM_THREADS)
             { /* reducing the current row */
               if (U[num_elements * k + k] == 0) {
-                printf ("Numericsl instability. The principal diagonal element is zero.\n");
+                printf ("Numerical instability. The principal diagonal element is zero.\n");
                 return 0;
               }
               /* Division Step */
@@ -159,7 +161,7 @@ void * gauss_compute_gold (void *args)
         }
 
         /* free allocated data structures */
-        free ((void *) m_thread);
+        free ((void *) thread_data);
         /* terminating the matrix thread when it is called and returns NULL */
         pthread_exit (NULL);
 }
@@ -168,7 +170,7 @@ void * gauss_compute_gold (void *args)
 /* FIXME: Write code to perform gaussian elimination using pthreads */
 void gauss_eliminate_using_pthreads(Matrix U)
 {
-        THREAD_ARGS *thread_args;                                /* arguments for threads */
+        thread_data_t *thread_data_s;                                /* arguments for threads */
         /* data structure to store the threads */
         pthread_t *worker_thread = (pthread_t *) malloc(NUM_THREADS * sizeof(pthread_t));
         /* Barrier Initialized */
@@ -179,14 +181,14 @@ void gauss_eliminate_using_pthreads(Matrix U)
 
         for (i = 0; i < NUM_THREADS; i++)
         {
-                thread_args = (THREAD_ARGS *) malloc(sizeof(THREAD_ARGS));
-                thread_args->tid = i;
-                thread_args->U = &U;
+                thread_data_s = (thread_data_t *) malloc(sizeof(thread_data_t));
+                thread_data_s->tid = i;
+                thread_data_s->U = &U;
                 /* Failure to Create a worker thread and exits program */
                 /* Creates independent threads each of which will execute the function */
                 /* Start new thread in calling process and wait till threads are complete before guass function continues. */
                 /* If wait, run the risk of executing an exit which will terminate the process and all threads before completing */
-                if ((pthread_create (&worker_thread[i], NULL, gauss_compute_gold, (void *) thread_args)) != 0) {
+                if ((pthread_create (&worker_thread[i], NULL, gauss_compute_gold, (void *) thread_data_s)) != 0) {
                    printf("\nFailed to Create a Worker Thread\n");
                    exit(EXIT_FAILURE);
                 }
@@ -197,7 +199,7 @@ void gauss_eliminate_using_pthreads(Matrix U)
             pthread_join(worker_thread[i], NULL);
         }
 
-        /* destroy barrier references and release resources used by barrier*/
+        /* destroy barrier references and release resources used by barrier */
         pthread_barrier_destroy(&divBarr);
         pthread_barrier_destroy(&elimBarr);
 
