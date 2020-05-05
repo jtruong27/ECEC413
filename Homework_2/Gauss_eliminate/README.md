@@ -8,4 +8,4 @@ run 'make' on the commandline to compile the executable
 
 ## Usage
 
-run './gauss_eliminate <square matrix size>'
+run `./gauss_eliminate <square matrix size>`
