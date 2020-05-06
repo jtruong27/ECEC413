@@ -4,6 +4,9 @@
  * Author: Naga Kandasamy
  * Date modified: April 22, 2020
  *
+ * Members: Minjae Park, John Truong
+ * Modified: May 06, 2020
+ *
  * Compile as follows:
  * gcc -o jacobi_solver jacobi_solver.c compute_gold.c -Wall -O3 -lpthread -lm 
 */
