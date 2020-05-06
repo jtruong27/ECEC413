@@ -7,9 +7,9 @@
 
 /* Matrix structure declaration */
 typedef struct matrix_s {
-  unsigned int num_columns;   /* Matrix width */
-  unsigned int num_rows;      /* Matrix height */ 
-  float *elements;
+    unsigned int num_columns;   /* Matrix width */
+    unsigned int num_rows;      /* Matrix height */ 
+    float *elements;
 }  matrix_t;
 
 /* Function prototypes */
@@ -23,5 +23,4 @@ void print_matrix(const matrix_t);
 float get_random_number(int, int);
 
 #endif /* _JACOBI_SOLVER_H_ */
-
 
