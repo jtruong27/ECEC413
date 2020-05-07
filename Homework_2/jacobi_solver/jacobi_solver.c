@@ -1,8 +1,11 @@
 /* Code for the Jacobi method of solving a system of linear equations 
  * by iteration.
-
+ *
  * Author: Naga Kandasamy
  * Date modified: April 22, 2020
+ * 
+ * Members: Minjae Park, John Truong
+ * Last modified: May 06, 2020
  *
  * Compile as follows:
  * gcc -o jacobi_solver jacobi_solver.c compute_gold.c -Wall -O3 -lpthread -lm
@@ -243,7 +246,7 @@ void *jacobi_thread(void *args)
     pthread_mutex_lock(targs->mutex);
     *(ssd) += partial_ssd;
     pthread_mutex_unlock(targs->mutex);
-    
+
     pthread_exit(NULL);
 }
 
