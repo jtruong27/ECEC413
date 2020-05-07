@@ -12,6 +12,7 @@
 */
 
 #include <stdlib.h>
+#include <sys/time.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
@@ -32,6 +33,7 @@ int main(int argc, char **argv)
     }
 
     int matrix_size = atoi(argv[1]);
+    struct timeval start, stop;   
 
     matrix_t A;             /* N x N constant matrix */
     matrix_t B;             /* N x 1 b matrix */
@@ -62,9 +64,12 @@ int main(int argc, char **argv)
     /* Compute Jacobi solution using reference code */
     fprintf(stderr, "Generating solution using reference code\n");
     int max_iter = 100000; /* Maximum number of iterations to run */
+    gettimeofday(&start, NULL);
     compute_gold(A, reference_x, B, max_iter);
+    gettimeofday(&stop, NULL);
+    fprintf(stderr, "Execution time = %fs\n", (float)(stop.tv_sec - start.tv_sec + (stop.tv_usec - start.tv_usec)/(float)1000000));
     display_jacobi_solution(A, reference_x, B); /* Display statistics */
-
+   
 #ifdef DEBUG
     print_matrix(A);
     print_matrix(B);
@@ -75,7 +80,10 @@ int main(int argc, char **argv)
      * Solutions are returned in mt_solution_x.
      * */
     fprintf(stderr, "\nPerforming Jacobi iteration using pthreads\n");
+    gettimeofday(&start, NULL);
     compute_using_pthreads(A, mt_solution_x, B);
+    gettimeofday(&stop, NULL);
+    fprintf(stderr, "Execution time = %fs\n", (float)(stop.tv_sec - start.tv_sec + (stop.tv_usec - start.tv_usec)/(float)1000000));
     display_jacobi_solution(A, mt_solution_x, B); /* Display statistics */
 
 #ifdef DEBUG
