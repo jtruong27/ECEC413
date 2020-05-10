@@ -109,8 +109,8 @@ int main(int argc, char **argv)
 /* FIXME: Write code to perform gaussian elimination using omp */
 void gauss_eliminate_using_omp(Matrix U)
 {
-  unsigned int num_elements =U.num_rows;
-  unsigned int i, j, k;
+  int num_elements = U.num_rows;
+  int i, j, k;
 
   printf("Starting Parallel Guassian Elimination OMP with %d elements.\n", num_elements);
 
@@ -121,10 +121,6 @@ void gauss_eliminate_using_omp(Matrix U)
     {
       for (j = (k + 1); j < num_elements; j++)
         { /* reducing the current row */
-       /* if (U.elements[num_elements * k + k] == 0) {
-	    fprintf (stderr, "Numerical instability. The principal diagonal element is zero.\n");
-            return -1;
-          } */
 
           /* Division Step */
           U.elements[num_elements * k + j] = (float) (U.elements[num_elements * k + j] / U.elements[num_elements * k + k]);
@@ -132,7 +128,7 @@ void gauss_eliminate_using_omp(Matrix U)
 
         /* Set the principal diagonal entry in U to 1 */
         U.elements[num_elements * k +k] = 1;
-
+      
       for (i = (k + 1); i < num_elements; i++)
       {
         for (j = (k + 1); j < num_elements; j++)

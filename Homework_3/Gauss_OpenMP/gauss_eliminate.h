@@ -3,7 +3,7 @@
 
 #define MIN_NUMBER 2           /* Max number in the A and b matrices */
 #define MAX_NUMBER 50          /* Max number in the A and b matrices */
-#define THREAD_COUNT 2         /* Number of threads */
+#define THREAD_COUNT 4         /* Number of threads */
 
 /* Matrix Structure declaration */
 typedef struct {
