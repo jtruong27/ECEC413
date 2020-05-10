@@ -3,8 +3,8 @@
  * Author: Naga Kandasamy
  * Date of last update: April 29, 2020
  *
- * Student names(s): FIXME
- * Date: FIXME
+ * Student names(s): Minjae Park, John Truong
+ * Date: 05/10/2020
  *
  * Compile as follows:
  * gcc -o gauss_eliminate gauss_eliminate.c compute_gold.c -fopenmp -std=c99 -Wall -O3 -lm
@@ -109,37 +109,38 @@ int main(int argc, char **argv)
 /* FIXME: Write code to perform gaussian elimination using omp */
 void gauss_eliminate_using_omp(Matrix U)
 {
-  unsigned int num_elements = MATRIX_SIZE;
+  unsigned int num_elements =U.num_rows;
   unsigned int i, j, k;
 
   printf("Starting Parallel Guassian Elimination OMP with %d elements.\n", num_elements);
 
-  #pragma omp parallel num_threads(thread_count) shared(num_elements, U_mt) private(i, j, k)
+  #pragma omp parallel num_threads(THREAD_COUNT) shared(num_elements, U) private(i, j, k)
   {
     #pragma omp for schedule(dynamic)
     for (k = 0; k < num_elements; k++)
     {
-      for (j = (k + tid + 1); j < num_elements; j++)
+      for (j = (k + 1); j < num_elements; j++)
         { /* reducing the current row */
-          if (U_mt.elements[num_elements * k + k] == 0) {
-            printf ("Numerical instability. The principal diagonal element is zero.\n");
-            return 0;
-          }
+       /* if (U.elements[num_elements * k + k] == 0) {
+	    fprintf (stderr, "Numerical instability. The principal diagonal element is zero.\n");
+            return -1;
+          } */
+
           /* Division Step */
-          U_mt.elements[num_elements * k + j] = (float) (U_mt.elements[num_elements * k + j] / U_mt.elements[num_elements * k + k]);
+          U.elements[num_elements * k + j] = (float) (U.elements[num_elements * k + j] / U.elements[num_elements * k + k]);
         }
 
-        /* Set the principal diagonal entry in U_mt to 1 */
-        U_mt.elements[num_elements * k +k] = 1;
+        /* Set the principal diagonal entry in U to 1 */
+        U.elements[num_elements * k +k] = 1;
 
       for (i = (k + 1); i < num_elements; i++)
       {
-        for (j = (k +1); j < num_elements; j++)
+        for (j = (k + 1); j < num_elements; j++)
           /* Elimination Step */
-          U_mt.elements[num_elements * i + j] = U_mt.elements[num_elements * i + j] -\
-            (U_mt.elements[num_elements * i + k] * U_mt.elements[num_elements * k + j]);
+          U.elements[num_elements * i + j] = U.elements[num_elements * i + j] -\
+            (U.elements[num_elements * i + k] * U.elements[num_elements * k + j]);
 
-			  U_mt.elements[num_elements * i + k] = 0;          
+			  U.elements[num_elements * i + k] = 0;          
       }
     }
   }
