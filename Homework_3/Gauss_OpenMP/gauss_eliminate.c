@@ -110,16 +110,13 @@ int main(int argc, char **argv)
 void gauss_eliminate_using_omp(Matrix U)
 {
   int num_elements = U.num_rows;
-  int i, j, k;
 
   printf("Starting Parallel Guassian Elimination OMP with %d elements.\n", num_elements);
 
-  #pragma omp parallel num_threads(THREAD_COUNT) shared(num_elements, U) private(i, j, k)
-  {
-    #pragma omp for schedule(dynamic)
-    for (k = 0; k < num_elements; k++)
+    for (int k = 0; k < num_elements; k++)
     {
-      for (j = (k + 1); j < num_elements; j++)
+      #pragma omp parallel for schedule(dynamic) num_threads(THREAD_COUNT)
+      for (int j = (k + 1); j < num_elements; j++)
         { /* reducing the current row */
 
           /* Division Step */
@@ -128,10 +125,11 @@ void gauss_eliminate_using_omp(Matrix U)
 
         /* Set the principal diagonal entry in U to 1 */
         U.elements[num_elements * k +k] = 1;
-      
-      for (i = (k + 1); i < num_elements; i++)
+     
+     #pragma omp parallel for schedule(dynamic) num_threads(THREAD_COUNT)
+     for (int i = (k + 1); i < num_elements; i++)
       {
-        for (j = (k + 1); j < num_elements; j++)
+        for (int j = (k + 1); j < num_elements; j++)
           /* Elimination Step */
           U.elements[num_elements * i + j] = U.elements[num_elements * i + j] -\
             (U.elements[num_elements * i + k] * U.elements[num_elements * k + j]);
@@ -139,7 +137,6 @@ void gauss_eliminate_using_omp(Matrix U)
 			  U.elements[num_elements * i + k] = 0;          
       }
     }
-  }
 }
 
 
