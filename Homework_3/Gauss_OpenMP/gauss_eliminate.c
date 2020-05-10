@@ -1,12 +1,12 @@
 /* Gaussian elimination code.
- * 
+ *
  * Author: Naga Kandasamy
  * Date of last update: April 29, 2020
  *
  * Student names(s): FIXME
  * Date: FIXME
  *
- * Compile as follows: 
+ * Compile as follows:
  * gcc -o gauss_eliminate gauss_eliminate.c compute_gold.c -fopenmp -std=c99 -Wall -O3 -lm
  */
 
@@ -17,9 +17,8 @@
 #include <string.h>
 #include <math.h>
 #include "gauss_eliminate.h"
+#include <omp.h>
 
-#define MIN_NUMBER 2
-#define MAX_NUMBER 50
 
 /* Function prototypes */
 extern int compute_gold(float *, int);
@@ -63,29 +62,34 @@ int main(int argc, char **argv)
     fprintf(stderr, "\nPerforming gaussian elimination using reference code\n");
     struct timeval start, stop;
     gettimeofday(&start, NULL);
-    
+
     int status = compute_gold(U_reference.elements, A.num_rows);
-  
+
     gettimeofday(&stop, NULL);
-    fprintf(stderr, "CPU run time = %0.2f s\n", (float)(stop.tv_sec - start.tv_sec\
+    fprintf(stderr, "Single Thread-CPU run time = %0.2f s\n", (float)(stop.tv_sec - start.tv_sec\
                 + (stop.tv_usec - start.tv_usec) / (float)1000000));
 
     if (status < 0) {
         fprintf(stderr, "Failed to convert given matrix to upper triangular. Try again.\n");
         exit(EXIT_FAILURE);
     }
-  
-    status = perform_simple_check(U_reference);	/* Check that principal diagonal elements are 1 */ 
+
+    status = perform_simple_check(U_reference);	/* Check that principal diagonal elements are 1 */
     if (status < 0) {
         fprintf(stderr, "Upper triangular matrix is incorrect. Exiting.\n");
         exit(EXIT_FAILURE);
     }
     fprintf(stderr, "Single-threaded Gaussian elimination was successful.\n");
-  
-    /* FIXME: Perform Gaussian elimination using OpenMP. 
+
+    /* FIXME: Perform Gaussian elimination using OpenMP.
      * The resulting upper triangular matrix should be returned in U_mt */
+    gettimeofday(&start, NULL);
     fprintf(stderr, "\nPerforming gaussian elimination using omp\n");
     gauss_eliminate_using_omp(U_mt);
+    gettimeofday(&stop, NULL);
+
+    fprintf(stderr, "OPM-CPU run time = %0.2f s\n", (float)(stop.tv_sec - start.tv_sec\
+                + (stop.tv_usec - start.tv_usec) / (float)1000000));
 
     /* Check if pthread result matches reference solution within specified tolerance */
     fprintf(stderr, "\nChecking results\n");
@@ -105,6 +109,40 @@ int main(int argc, char **argv)
 /* FIXME: Write code to perform gaussian elimination using omp */
 void gauss_eliminate_using_omp(Matrix U)
 {
+  unsigned int num_elements = MATRIX_SIZE;
+  unsigned int i, j, k;
+
+  printf("Starting Parallel Guassian Elimination OMP with %d elements.\n", num_elements);
+
+  #pragma omp parallel num_threads(thread_count) shared(num_elements, U_mt) private(i, j, k)
+  {
+    #pragma omp for schedule(dynamic)
+    for (k = 0; k < num_elements; k++)
+    {
+      for (j = (k + tid + 1); j < num_elements; j++)
+        { /* reducing the current row */
+          if (U_mt.elements[num_elements * k + k] == 0) {
+            printf ("Numerical instability. The principal diagonal element is zero.\n");
+            return 0;
+          }
+          /* Division Step */
+          U_mt.elements[num_elements * k + j] = (float) (U_mt.elements[num_elements * k + j] / U_mt.elements[num_elements * k + k]);
+        }
+
+        /* Set the principal diagonal entry in U_mt to 1 */
+        U_mt.elements[num_elements * k +k] = 1;
+
+      for (i = (k + 1); i < num_elements; i++)
+      {
+        for (j = (k +1); j < num_elements; j++)
+          /* Elimination Step */
+          U_mt.elements[num_elements * i + j] = U_mt.elements[num_elements * i + j] -\
+            (U_mt.elements[num_elements * i + k] * U_mt.elements[num_elements * k + j]);
+
+			  U_mt.elements[num_elements * i + k] = 0;          
+      }
+    }
+  }
 }
 
 
@@ -120,8 +158,8 @@ int check_results(float *A, float *B, int size, float tolerance)
 
 
 /* Allocate a matrix of dimensions height*width
- * If init == 0, initialize to all zeroes.  
- * If init == 1, perform random initialization. 
+ * If init == 0, initialize to all zeroes.
+ * If init == 1, perform random initialization.
 */
 Matrix allocate_matrix(int num_rows, int num_columns, int init)
 {
@@ -131,18 +169,18 @@ Matrix allocate_matrix(int num_rows, int num_columns, int init)
     M.num_rows = num_rows;
     int size = M.num_rows * M.num_columns;
     M.elements = (float *)malloc(size * sizeof(float));
-  
+
     for (i = 0; i < size; i++) {
         if (init == 0)
             M.elements[i] = 0;
         else
             M.elements[i] = get_random_number(MIN_NUMBER, MAX_NUMBER);
     }
-  
+
     return M;
 }
 
-/* Return a random floating-point number between [min, max] */ 
+/* Return a random floating-point number between [min, max] */
 float get_random_number(int min, int max)
 {
     return (float)floor((double)(min + (max - min + 1) * ((float)rand() / (float)RAND_MAX)));
@@ -155,6 +193,6 @@ int perform_simple_check(const Matrix M)
     for (i = 0; i < M.num_rows; i++)
         if ((fabs(M.elements[M.num_rows * i + i] - 1.0)) > 1e-6)
             return -1;
-  
+
     return 0;
 }
