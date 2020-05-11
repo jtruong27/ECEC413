@@ -129,9 +129,10 @@ void compute_using_omp(const matrix_t A, matrix_t mt_sol_x, const matrix_t B)
 			/* Check for convergence and update unknown */
 			ssd = 0.0;
 
-			#pragma omp parallel for reduction(+: ssd)
+			#pragma omp for schedule(dynamic)
 			for (int i = 0; i < num_rows; i++)
 			{
+				#pragma omp critical
 				ssd += (new_x.elements[i] - mt_sol_x.elements[i]) * (new_x.elements[i] - mt_sol_x.elements[i]);
 				mt_sol_x.elements[i] = new_x.elements[i];
 			}
@@ -139,7 +140,7 @@ void compute_using_omp(const matrix_t A, matrix_t mt_sol_x, const matrix_t B)
 		
 		num_iter++;
 		mse = sqrt(ssd); /* Mean squared error. */
-		if(ITER_OUTPUT) fprintf(stderr, "Iteration: %d. MSE = %f\n", num_iter, mse);
+		/* fprintf(stderr, "Iteration: %d. MSE = %f\n", num_iter, mse); */
 		if ((mse <= THRESHOLD) || (num_iter == max_iter))
 		done = 1;
 	}
@@ -149,7 +150,7 @@ void compute_using_omp(const matrix_t A, matrix_t mt_sol_x, const matrix_t B)
 	else
 		fprintf(stderr, "\nMaximum allowed iterations reached\n");
 
-	free(new_x.elements)
+	free(new_x.elements);
 }
 
 /* Allocate a matrix of dimensions height * width.

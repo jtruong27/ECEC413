@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     int status = compute_gold(U_reference.elements, A.num_rows);
 
     gettimeofday(&stop, NULL);
-    fprintf(stderr, "Single Thread-CPU run time = %0.2f s\n", (float)(stop.tv_sec - start.tv_sec\
+    fprintf(stderr, "Single Thread-CPU run time = %0.3f s\n", (float)(stop.tv_sec - start.tv_sec\
                 + (stop.tv_usec - start.tv_usec) / (float)1000000));
 
     if (status < 0) {
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
     gauss_eliminate_using_omp(U_mt);
     gettimeofday(&stop, NULL);
 
-    fprintf(stderr, "OPM-CPU run time = %0.2f s\n", (float)(stop.tv_sec - start.tv_sec\
+    fprintf(stderr, "OPM-CPU run time = %0.3f s\n", (float)(stop.tv_sec - start.tv_sec\
                 + (stop.tv_usec - start.tv_usec) / (float)1000000));
 
     /* Check if pthread result matches reference solution within specified tolerance */

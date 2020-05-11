@@ -4,7 +4,7 @@
 #define THRESHOLD 1e-5      /* Threshold for convergence */
 #define MIN_NUMBER 2        /* Min number in the A and b matrices */
 #define MAX_NUMBER 10       /* Max number in the A and b matrices */
-#define THREAD_COUNT 2      /* Number of Threads */
+#define THREAD_COUNT 1      /* Number of Threads */
 
 /* Matrix structure declaration */
 typedef struct matrix_s {
