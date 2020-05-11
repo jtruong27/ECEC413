@@ -98,7 +98,7 @@ void compute_using_omp(const matrix_t A, matrix_t mt_sol_x, const matrix_t B)
 
 	#pragma omp parallel num_threads(THREAD_COUNT)
 	{
-		#pragma omp for schedule(dynamic)
+		#pragma omp for
 		/* Initialize current jacobi solution */
 		for (int i = 0; i < num_rows; i++)
 			mt_sol_x.elements[i] = B.elements[i];
@@ -114,7 +114,7 @@ void compute_using_omp(const matrix_t A, matrix_t mt_sol_x, const matrix_t B)
 	{
 		#pragma omp parallel num_threads(THREAD_COUNT)
 		{
-			#pragma omp for schedule(dynamic)
+			#pragma omp for
 			for (int i = 0; i < num_rows; i++)
 			{
 				double sum = 0.0;
@@ -126,10 +126,11 @@ void compute_using_omp(const matrix_t A, matrix_t mt_sol_x, const matrix_t B)
 				/* Update values for the unknow for the current row */
 				new_x.elements[i] = (B.elements[i] - sum) / A.elements[i * num_cols + i];
 			}
+			
 			/* Check for convergence and update unknown */
 			ssd = 0.0;
 
-			#pragma omp for schedule(dynamic)
+			#pragma omp for
 			for (int i = 0; i < num_rows; i++)
 			{
 				#pragma omp critical
