@@ -4,11 +4,12 @@
 #define THRESHOLD 1e-5      /* Threshold for convergence */
 #define MIN_NUMBER 2        /* Min number in the A and b matrices */
 #define MAX_NUMBER 10       /* Max number in the A and b matrices */
+#define THREAD_COUNT 2      /* Number of Threads */
 
 /* Matrix structure declaration */
 typedef struct matrix_s {
     unsigned int num_columns;   /* Matrix width */
-    unsigned int num_rows;      /* Matrix height */ 
+    unsigned int num_rows;      /* Matrix height */
     float *elements;
 }  matrix_t;
 
@@ -23,4 +24,3 @@ void print_matrix(const matrix_t);
 float get_random_number(int, int);
 
 #endif /* _JACOBI_SOLVER_H_ */
-
