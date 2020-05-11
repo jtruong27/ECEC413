@@ -8,4 +8,5 @@ run 'make' on the commandline to compile the executable
 
 ## Usage
 
-run ./
+run `./jacobi_solver <square matrix size>`
+
