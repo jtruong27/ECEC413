@@ -141,7 +141,7 @@ void compute_using_omp(const matrix_t A, matrix_t mt_sol_x, const matrix_t B)
 		
 		num_iter++;
 		mse = sqrt(ssd); /* Mean squared error. */
-		/* fprintf(stderr, "Iteration: %d. MSE = %f\n", num_iter, mse); */
+		fprintf(stderr, "Iteration: %d. MSE = %f\n", num_iter, mse);
 		if ((mse <= THRESHOLD) || (num_iter == max_iter))
 		done = 1;
 	}
