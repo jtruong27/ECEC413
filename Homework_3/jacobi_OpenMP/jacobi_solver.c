@@ -114,7 +114,7 @@ void compute_using_omp(const matrix_t A, matrix_t mt_sol_x, const matrix_t B)
 	{
 		#pragma omp parallel num_threads(THREAD_COUNT)
 		{
-			#pragma omp for
+			#pragma omp for collapse(1)
 			for (int i = 0; i < num_rows; i++)
 			{
 				double sum = 0.0;
@@ -130,10 +130,9 @@ void compute_using_omp(const matrix_t A, matrix_t mt_sol_x, const matrix_t B)
 			/* Check for convergence and update unknown */
 			ssd = 0.0;
 
-			#pragma omp for
+			#pragma omp for reduction(+: ssd) 
 			for (int i = 0; i < num_rows; i++)
 			{
-				#pragma omp critical
 				ssd += (new_x.elements[i] - mt_sol_x.elements[i]) * (new_x.elements[i] - mt_sol_x.elements[i]);
 				mt_sol_x.elements[i] = new_x.elements[i];
 			}
