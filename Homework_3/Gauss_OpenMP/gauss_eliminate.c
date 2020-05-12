@@ -115,7 +115,7 @@ void gauss_eliminate_using_omp(Matrix U)
 
     for (int k = 0; k < num_elements; k++)
     {
-      #pragma omp parallel for schedule(dynamic) num_threads(THREAD_COUNT)
+      #pragma omp parallel for num_threads(THREAD_COUNT)
       for (int j = (k + 1); j < num_elements; j++)
         { /* reducing the current row */
 
@@ -126,7 +126,7 @@ void gauss_eliminate_using_omp(Matrix U)
         /* Set the principal diagonal entry in U to 1 */
         U.elements[num_elements * k +k] = 1;
      
-     #pragma omp parallel for schedule(dynamic) num_threads(THREAD_COUNT)
+     #pragma omp parallel for num_threads(THREAD_COUNT)
      for (int i = (k + 1); i < num_elements; i++)
       {
         for (int j = (k + 1); j < num_elements; j++)
