@@ -224,6 +224,10 @@ swarm_t *pso_init(char *function, int dim, int swarm_size,
     
     int err = 0;    // error catching for eval_fitness'
 
+#pragma omp parallel for default(none) \
+        if(thr_cnt > 1) num_threads(thr_cnt) \
+        private(i,j,particle,fitness) \
+        shared(dim,xmin,xmax,status,swarm,function, err)
     for (i = 0; i < swarm->num_particles; i++) {
         particle = &swarm->particle[i];
         particle->dim = dim; 
