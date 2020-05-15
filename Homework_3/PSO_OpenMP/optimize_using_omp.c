@@ -105,7 +105,7 @@ int optimize_using_omp(char *function, int dim, int swarm_size,
     int g; 
     g = pso_solve_omp(function, swarm, xmax, xmin, num_iter, num_threads);
     if (g >= 0) {
-        fprintf(stderr, "Solution:\n");
+        fprintf(stderr, "OMP Solution:\n");
         pso_print_particle(&swarm->particle[g]);
     }
 
