@@ -28,7 +28,7 @@ void print_args(char *, int, int, float, float);
 void pso_print_swarm(swarm_t *);
 void pso_print_particle(particle_t *);
 float uniform(float, float);
-swarm_t *pso_init(char *, int, int, float, float);
+swarm_t *pso_init(char *, int, int, float, float, int);
 int pso_eval_fitness(char *, particle_t *, float *);
 int pso_solve_gold(char *, swarm_t *, float, float, int);
 void pso_free(swarm_t *);

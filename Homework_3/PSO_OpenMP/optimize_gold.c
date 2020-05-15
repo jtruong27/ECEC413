@@ -77,14 +77,13 @@ int pso_solve_gold(char *function, swarm_t *swarm,
     return g;
 }
 
-
 int optimize_gold(char *function, int dim, int swarm_size, 
                   float xmin, float xmax, int max_iter)
 {
      /* Initialize PSO */
     swarm_t *swarm;
     srand(time(NULL));
-    swarm = pso_init(function, dim, swarm_size, xmin, xmax);
+    swarm = pso_init(function, dim, swarm_size, xmin, xmax, 1);
     if (swarm == NULL) {
         fprintf(stderr, "Unable to initialize PSO\n");
         exit(EXIT_FAILURE);

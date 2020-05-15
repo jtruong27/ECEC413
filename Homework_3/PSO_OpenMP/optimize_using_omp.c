@@ -14,7 +14,7 @@
 
 /* Solve PSO */
 int pso_solve_omp(char *function, swarm_t *swarm, 
-                    float xmax, float xmin, int max_iter, int thr_count)
+                    float xmax, float xmin, int max_iter, int thr_cnt)
 {
     int i, j, iter, g;
     float w, c1, c2;
@@ -28,9 +28,7 @@ int pso_solve_omp(char *function, swarm_t *swarm,
     iter = 0;
     g = -1;
     while (iter < max_iter) {
-#pragma omp parallel num_threads(thr_count)
-{
-#pragma omp for
+#pragma omp parallel for num_threads(thr_cnt) if(thr_cnt > 1)
         for (i = 0; i < swarm->num_particles; i++) {
             particle = &swarm->particle[i];
             gbest = &swarm->particle[particle->g];  /* Best performing particle from last iteration */ 
@@ -62,18 +60,15 @@ int pso_solve_omp(char *function, swarm_t *swarm,
                 for (j = 0; j < particle->dim; j++)
                     particle->pbest[j] = particle->x[j];
             }
-        }   // implicit sync point
+        }
 
-#pragma omp single
         /* Identify best performing particle */
         g = pso_get_best_fitness(swarm);
 
-#pragma omp for
         for (i = 0; i < swarm->num_particles; i++) {
             particle = &swarm->particle[i];
             particle->g = g;
         }
-}   // end of parallel region
 
 #ifdef SIMPLE_DEBUG
         /* Print best performing particle */
@@ -92,7 +87,7 @@ int optimize_using_omp(char *function, int dim, int swarm_size,
     /* Initialize PSO */
     swarm_t *swarm;
     srand(time(NULL));
-    swarm = pso_init(function, dim, swarm_size, xmin, xmax);
+    swarm = pso_init(function, dim, swarm_size, xmin, xmax, num_threads);
     if (swarm == NULL) {
         fprintf(stderr, "Unable to initialize PSO\n");
         exit(EXIT_FAILURE);
@@ -101,7 +96,7 @@ int optimize_using_omp(char *function, int dim, int swarm_size,
 #ifdef VERBOSE_DEBUG
     pso_print_swarm(swarm);
 #endif
-
+    
     /* Solve PSO */
     int g;
     g = pso_solve_omp(function, swarm, xmax, xmin, num_iter, num_threads);
@@ -109,7 +104,7 @@ int optimize_using_omp(char *function, int dim, int swarm_size,
         fprintf(stderr, "Solution:\n");
         pso_print_particle(&swarm->particle[g]);
     }
-
+    
     pso_free(swarm);
     return g;
 }
