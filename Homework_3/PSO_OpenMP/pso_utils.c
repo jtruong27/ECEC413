@@ -5,6 +5,7 @@
 #include <time.h>
 #include <math.h>
 #include <string.h>
+#include <omp.h>
 #include "pso.h"
 
 /* Return a random number uniformly distributed between [min, max] */
@@ -266,6 +267,7 @@ swarm_t *pso_init(char *function, int dim, int swarm_size,
     /* Get index of particle with best fitness */
     g = pso_get_best_fitness(swarm, thr_cnt);
 
+ #pragma omp parallel for
     for (i = 0; i < swarm->num_particles; i++) {
         particle = &swarm->particle[i];
         particle->g = g;
