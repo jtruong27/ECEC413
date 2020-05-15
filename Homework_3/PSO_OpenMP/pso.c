@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "pso.h"
+#include <sys/time.h>
 
 int main(int argc, char **argv)
 {
@@ -42,7 +43,14 @@ int main(int argc, char **argv)
 
     /* Optimize using reference version */
     int status;
+    struct timeval start, stop;
+    
+    gettimeofday(&start, NULL);
     status = optimize_gold(function, dim, swarm_size, xmin, xmax, max_iter);
+    gettimeofday(&stop, NULL);
+    fprintf(stderr, "Single Thread-CPU run time = %0.3f s\n", (float)(stop.tv_sec - start.tv_sec\
+                + (stop.tv_usec - start.tv_usec) / (float)1000000));
+    
     if (status < 0) {
         fprintf(stderr, "Error optimizing function using reference code\n");
         exit (EXIT_FAILURE);
@@ -52,7 +60,12 @@ int main(int argc, char **argv)
      * Return -1 on error, 0 on success. Print best-performing 
      * particle within the function prior to returning. 
      */
+    gettimeofday(&start, NULL);
     status = optimize_using_omp(function, dim, swarm_size, xmin, xmax, max_iter, num_threads);
+    gettimeofday(&stop, NULL);
+    fprintf(stderr, "OPM-CPU run time = %0.3f s\n", (float)(stop.tv_sec - start.tv_sec\
+                + (stop.tv_usec - start.tv_usec) / (float)1000000));
+    
     if (status < 0) {
         fprintf(stderr, "Error optimizing function using OpenMP\n");
         exit (EXIT_FAILURE);
