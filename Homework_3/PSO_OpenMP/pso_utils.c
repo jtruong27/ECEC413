@@ -127,20 +127,29 @@ int pso_eval_fitness(char *function, particle_t *particle, float *fitness)
 }
 
 /* Return index of best performing particle */
-int pso_get_best_fitness(swarm_t *swarm)
+int pso_get_best_fitness(swarm_t *swarm, int thr_cnt)
 {
     int i, g;
     float best_fitness = INFINITY;
     particle_t *particle;
 
     g = -1;
+
+#pragma omp parallel default(none) \
+    private(i,particle) \
+    shared(best_fitness,g,swarm)
+{
     for (i = 0; i < swarm->num_particles; i++) {
         particle = &swarm->particle[i];
+#pragma omp critical
+{
         if (particle->fitness < best_fitness) {
             best_fitness = particle->fitness;
             g = i;
         }
+}
     }
+}
     return g;
 }
 
@@ -251,7 +260,7 @@ swarm_t *pso_init(char *function, int dim, int swarm_size,
     }
 
     /* Get index of particle with best fitness */
-    g = pso_get_best_fitness(swarm);
+    g = pso_get_best_fitness(swarm, thr_cnt);
 
     for (i = 0; i < swarm->num_particles; i++) {
         particle = &swarm->particle[i];

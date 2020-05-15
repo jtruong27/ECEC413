@@ -61,7 +61,7 @@ int pso_solve_gold(char *function, swarm_t *swarm,
         } /* Particle loop */
 
         /* Identify best performing particle */
-        g = pso_get_best_fitness(swarm);
+        g = pso_get_best_fitness(swarm, 1);
         for (i = 0; i < swarm->num_particles; i++) {
             particle = &swarm->particle[i];
             particle->g = g;

@@ -28,7 +28,10 @@ int pso_solve_omp(char *function, swarm_t *swarm,
     iter = 0;
     g = -1;
     while (iter < max_iter) {
-#pragma omp parallel for num_threads(thr_cnt) if(thr_cnt > 1)
+#pragma omp parallel for default(none) \
+        num_threads(thr_cnt) if(thr_cnt > 1) \
+        private(i,j,r1,r2,particle,gbest,curr_fitness) \
+        shared(w,c1,c2,swarm,xmin,xmax,function)
         for (i = 0; i < swarm->num_particles; i++) {
             particle = &swarm->particle[i];
             gbest = &swarm->particle[particle->g];  /* Best performing particle from last iteration */ 
@@ -60,10 +63,10 @@ int pso_solve_omp(char *function, swarm_t *swarm,
                 for (j = 0; j < particle->dim; j++)
                     particle->pbest[j] = particle->x[j];
             }
-        }
+        }   // sync point
 
         /* Identify best performing particle */
-        g = pso_get_best_fitness(swarm);
+        g = pso_get_best_fitness(swarm, thr_cnt);
 
         for (i = 0; i < swarm->num_particles; i++) {
             particle = &swarm->particle[i];
@@ -75,6 +78,7 @@ int pso_solve_omp(char *function, swarm_t *swarm,
         fprintf(stderr, "\nIteration %d:\n", iter);
         pso_print_particle(&swarm->particle[g]);
 #endif
+
         iter++;
     } /* End of iteration */
 
@@ -96,15 +100,15 @@ int optimize_using_omp(char *function, int dim, int swarm_size,
 #ifdef VERBOSE_DEBUG
     pso_print_swarm(swarm);
 #endif
-    
+
     /* Solve PSO */
-    int g;
+    int g; 
     g = pso_solve_omp(function, swarm, xmax, xmin, num_iter, num_threads);
     if (g >= 0) {
         fprintf(stderr, "Solution:\n");
         pso_print_particle(&swarm->particle[g]);
     }
-    
+
     pso_free(swarm);
     return g;
 }
