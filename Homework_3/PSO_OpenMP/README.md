@@ -4,8 +4,8 @@ Members: Minjae Park, John Truong
 
 ## Compiling
 
-run 'make' on the commandline to compile the executable
+run `make` on the commandline to compile the executable
 
 ## Usage
 
-run ./
+run `./pso <function name> <dimensionality> <xmin> <xmax> <num iterations> <num threads>` to run the code
