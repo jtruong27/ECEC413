@@ -8,7 +8,7 @@ LDLIBS := -lm
 all: pso
 
 pso: pso.o pso_utils.o optimize_gold.o optimize_using_omp.o 
-	$(CC) -o pso pso.o pso_utils.o optimize_gold.o optimize_using_omp.o $(LDLIBS)
+	$(CC) -o pso pso.o pso_utils.o optimize_gold.o optimize_using_omp.o $(CCFLAGS) $(LDLIBS)
 
 pso.o: pso.c pso.h
 	$(CC) -c pso.c $(CCFLAGS)

@@ -12,8 +12,8 @@
  * Date created: April 30, 2020
  * Date modified: May 4, 2020 
  *
- * Student/team: FIXME
- * Date: FIXME
+ * Student/team: Minjae Park, John Truong
+ * Date: May 15, 2020
  */  
 #include <stdio.h>
 #include <stdlib.h>
