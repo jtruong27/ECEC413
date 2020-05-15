@@ -8,4 +8,4 @@ run `make` on the commandline to compile the executable
 
 ## Usage
 
-run `./pso <function name> <dimensionality> <xmin> <xmax> <num iterations> <num threads>` to run the code
+run `./pso <function name> <dimensionality> <swarm size> <xmin> <xmax> <num iterations> <num threads>` to run the code
