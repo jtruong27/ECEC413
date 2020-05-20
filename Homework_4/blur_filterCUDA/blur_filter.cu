@@ -30,6 +30,10 @@ extern "C" void compute_gold(const image_t, image_t);
 void compute_on_device(const image_t, image_t);
 int check_results(const float *, const float *, int, float);
 void print_image(const image_t);
+image_t allocate_image_on_device (const image_t);
+void copy_image_to_device(image_t, image_t);
+void copy_image_from_device(image_t, image_t);
+void check_CUDA_error(const char *);
 
 int main(int argc, char **argv)
 {
