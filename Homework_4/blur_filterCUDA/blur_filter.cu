@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     gettimeofday(&start, NULL);
     compute_gold(in, out_gold);
     gettimeofday(&stop, NULL);
-    fprintf ("Execution time for CPU = %fs. \n", (float)(stop.tv_sec - start.tv_sec +\
+    fprintf(stderr, "Execution time = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
                   (stop.tv_usec - start.tv_usec)/(float)1000000));
 
 #ifdef DEBUG
@@ -123,7 +123,7 @@ void compute_on_device(const image_t in, image_t out)
   /* Launch kernel with multiple thread blocks. The kernel call is non-blocking. */
 	blur_filter_kernel<<<grid, thread_block>>>(d_in.element, d_out.element, d_in.size);
 	gettimeofday(&stop, NULL);
-	fprintf ("Execution time for GPU = %fs. \n", (float)(stop.tv_sec - start.tv_sec +\
+  fprintf(stderr, "Execution time = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
                 (stop.tv_usec - start.tv_usec)/(float)1000000));
 
   /* check for errors */
