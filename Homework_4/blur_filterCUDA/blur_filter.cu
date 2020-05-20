@@ -146,7 +146,7 @@ image_t allocate_image_on_device (const image_t img)
 	int size = img.size * img.size * sizeof(float);
 
 	cudaMalloc((void**)&img_device.element, size);
-  if(img_device.elements == NULL){
+  if(img_device.element == NULL){
     fprintf(stderr, "CudaMalloc error\n");
     exit(EXIT_FAILURE);
   }
