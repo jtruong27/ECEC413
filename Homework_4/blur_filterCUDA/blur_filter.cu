@@ -79,12 +79,7 @@ int main(int argc, char **argv)
 #endif
 
    /* FIXME: Calculate the blur on the GPU. The result is stored in out_gpu. */
-   fprintf(stderr, "Calculating blur on the GPU\n");
-   gettimeofday(&start, NULL);
    compute_on_device(in, out_gpu);
-   gettimeofday(&stop, NULL);
-    fprintf(stderr, "Execution time = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
-                  (stop.tv_usec - start.tv_usec)/(float)1000000));
 
    /* Check CPU and GPU results for correctness */
    fprintf(stderr, "Checking CPU and GPU results\n");
@@ -119,10 +114,14 @@ void compute_on_device(const image_t in, image_t out)
 	dim3 thread_block(THREAD_BLOCK_SIZE, 1, 1); /* Set number of threads in the thread block */
   dim3 grid(NUM_THREAD_BLOCKS,1);
 
-
+  struct timeval start, stop;
+  fprintf(stderr, "Calculating blur on the GPU\n");
+	gettimeofday(&start, NULL);
   /* Launch kernel with multiple thread blocks. The kernel call is non-blocking. */
 	blur_filter_kernel<<<grid, thread_block>>>(d_in.element, d_out.element, d_in.size);
-
+	gettimeofday(&stop, NULL);
+  fprintf(stderr, "Execution time = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
+                (stop.tv_usec - start.tv_usec)/(float)1000000));
 
   /* check for errors */
   check_CUDA_error("Error in kernel");
