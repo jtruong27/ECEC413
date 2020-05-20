@@ -115,6 +115,7 @@ void compute_on_device(const image_t in, image_t out)
   dim3 grid(NUM_THREAD_BLOCKS,1);
 
   struct timeval start, stop;
+  fprintf(stderr, "          \n");
   fprintf(stderr, "Calculating blur on the GPU\n");
 	gettimeofday(&start, NULL);
   /* Launch kernel with multiple thread blocks. The kernel call is non-blocking. */
