@@ -116,7 +116,6 @@ void compute_on_device(const image_t in, image_t out)
 	copy_image_to_device(d_in, in);
 
 	/* Set up execution grid on the GPU */
-  int num_thread_blocks = NUM_THREAD_BLOCKS;
 	dim3 thread_block(THREAD_BLOCK_SIZE, 1, 1); /* Set number of threads in the thread block */
   dim3 grid(NUM_THREAD_BLOCKS,1);
 
