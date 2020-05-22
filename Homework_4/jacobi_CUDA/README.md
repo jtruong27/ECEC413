@@ -1,4 +1,4 @@
-# ECEC413 Jacobi Elimination CUDA
+# ECEC413 Jacobi Iteration CUDA
 
 Members: Minjae Park, John Truong
 
@@ -8,4 +8,4 @@ run 'make' on the commandline to compile the executable
 
 ## Usage
 
-run `./jacobi <square matrix size>`
+run `./jacobi_iteration <square matrix size>`
