@@ -11,10 +11,12 @@
 #define NUM_COLUMNS MATRIX_SIZE         /* Number of columns in matrix A */
 #define NUM_ROWS MATRIX_SIZE            /* Number of rows in matrix A */
 
+#define TILE_SIZE 16                    /* Number for Tile Size for Kernel Optimization */
+
 /* Matrix structure declaration */
 typedef struct matrix_s {
     unsigned int num_columns;           /* Matrix width */
-    unsigned int num_rows;              /* Matrix height */ 
+    unsigned int num_rows;              /* Matrix height */
     float *elements;
 }  matrix_t;
 
@@ -34,4 +36,3 @@ float get_random_number(int, int);
 void check_CUDA_error(const char *);
 
 #endif /* _JACOBI_ITERATION_H_ */
-
