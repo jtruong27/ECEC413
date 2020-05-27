@@ -36,7 +36,7 @@ __global__ void jacobi_update_x(matrix_t sol_x, const matrix_t new_x)
 /* Jacobi iteration using global memory. The reference pattern to global memory by the threads are not coalesced*/
 __global__ void jacobi_iteration_kernel_naive(const matrix_t A, const matrix_t x, const matrix_t B, matrix_t x_update, int* mutex, double* ssd)
 {
-  _shared_ double ssd_per_thread[THREAD_BLOCK_SIZE];
+  __shared__ double ssd_per_thread[THREAD_BLOCK_SIZE];
   unsigned int num_rows = A.num_rows;
   unsigned int num_cols = A.num_columns;
   float new_x;
@@ -84,7 +84,7 @@ __global__ void jacobi_iteration_kernel_naive(const matrix_t A, const matrix_t x
       if (threadY == 0){
         lock(mutex);
         *ssd  += ssd_per_thread[0];
-        unlock(mutex;)
+        unlock(mutex);
       }
   }
 
@@ -143,6 +143,7 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
       float bDiag = B.elements[row];
 
       sum += -aDiag * xDiag;
+      new_x = (bDiag - sum) / aDiag;
 
       newSSD = (double) (new_x - xDiag) * (new_x - xDiag);
       x_update.elements[row] = new_x;

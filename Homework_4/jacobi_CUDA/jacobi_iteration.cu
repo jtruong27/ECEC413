@@ -57,6 +57,8 @@ int main(int argc, char **argv)
 	print_matrix(reference_x);
 #endif
 
+		struct timeval start, stop;
+
     /* Compute Jacobi solution on CPU */
 		printf("\nPerforming Jacobi iteration on the CPU\n");
 		gettimeofday(&start, NULL);
