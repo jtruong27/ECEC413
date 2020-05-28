@@ -5,7 +5,7 @@
 /* function is used to compare and swap technique to get a mutex/lock */
 __device__ void lock(int *mutex)
 {
-  while (atomicCAS(mutex, 0, 1) != 0);
+  while(atomicCAS(mutex, 0, 1) != 0);
   return;
 }
 
@@ -22,8 +22,8 @@ __global__ void jacobi_update_x(matrix_t sol_x, const matrix_t new_x)
   unsigned num_rows = sol_x.num_rows;
 
   /* Calculate thread index, block index and position in matrix */
-  int threadX = threadIdx.x;
   int threadY = threadIdx.y;
+  int threadX = threadIdx.x;
   int blockY = blockIdx.y;
   int row = blockDim.y * blockY + threadY;
 
@@ -74,11 +74,10 @@ __global__ void jacobi_iteration_kernel_naive(const matrix_t A, const matrix_t x
       /* SSD Reduction */
       i = blockDim.y / 2;
       while (i != 0){
-        if (threadY < i){
+        if (threadY < i)
           ssd_per_thread[threadY] += ssd_per_thread[threadY + i];
           __syncthreads();
           i /= 2;
-        }
       }
 
       if (threadY == 0){
@@ -87,7 +86,6 @@ __global__ void jacobi_iteration_kernel_naive(const matrix_t A, const matrix_t x
         unlock(mutex);
       }
   }
-
     return;
 }
 
@@ -96,8 +94,8 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
 {
   /* Declare shared memory for the thread block */
   __shared__ float aTile[TILE_SIZE][TILE_SIZE];
-  __shared__ float xTile[TILE_SIZE];
-  __shared__ double ssd_per_thread[TILE_SIZE];
+	__shared__ float xTile[TILE_SIZE];
+	__shared__ double ssd_per_thread[TILE_SIZE];
 
   unsigned int num_rows = A.num_rows;
   unsigned int num_cols = A.num_columns;
@@ -107,31 +105,30 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
 
   /* Calculate thread index, block index and position in matrix */
   int threadX = threadIdx.x;
-  int threadY = threadIdx.y;
-  int blockY = blockIdx.y;
-  int row = blockDim.y * blockY + threadY;
+	int threadY = threadIdx.y;
+	int blockY = blockIdx.y;
+	int row = blockDim.y * blockY + threadY;
 
   unsigned int i, k;
 
   if (row < num_rows){
-    for (i = 0; i < num_cols; i += TILE_SIZE)
-    {
+    for (i = 0; i < num_cols; i += TILE_SIZE){
       /* Tile size elements are being brought in for row of A into shared memory */
       aTile[threadY][threadX] = A.elements[row * num_cols + i + threadX];
 
       /* Tile size elements are being brought in for row of x and B into shared memory */
       if (threadY == 0)
-        xTile[threadX] = x.elements[i + threadX];
+				xTile[threadX] = x.elements[i + threadX];
       /* Barrier sync to ensure that shared memory has been populated */
       __syncthreads();
 
       /* computing jacobi partial sum on the current tile */
-      if (threadX){
-        for (k = 0; k < TILE_SIZE; k += 1)
-          sum += (double) aTile[threadY][k] * xTile[k];
-      }
-      __syncthreads();
-    }
+      if (threadX == 0){
+				for (k = 0; k < TILE_SIZE; k+=1)
+					sum += (double) aTile[threadY][k] * xTile[k];
+			}
+			__syncthreads();
+		}
 
     if (threadX == 0){
       float aDiag = A.elements[row * num_cols + row];
@@ -163,6 +160,5 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
       }
     }
   }
-
   return;
 }

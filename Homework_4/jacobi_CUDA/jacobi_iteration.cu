@@ -91,7 +91,6 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 {
 	unsigned int done = 0;
 	unsigned int num_iter = 0;
-	unsigned int i;
 	double ssd, mse;
 
 	double *d_ssd = NULL; /* Pointer to device address holding ssd */
@@ -101,7 +100,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 	matrix_t new_x_opt = allocate_matrix_on_host(MATRIX_SIZE, 1, 0);
 
 	/* initialize solution of x for GPU */
-	for (i = 0; i < A.num_rows; i++){
+	for (unsigned int i = 0; i < A.num_rows; i++){
 		float e = B.elements[i];
 		gpu_naive_sol_x.elements[i] = e;
 		gpu_opt_sol_x.elements[i] = e;
@@ -132,16 +131,16 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 	check_CUDA_error("Copying matrix opt_sol_x to device");
 
 	/* Allocating space for the device ssd on the GPU */
-	cudaMalloc((void**) &d_ssd, sizeof(double));
+	cudaMalloc((void**) &d_ssd, sizeof (double));
 
 	/* Allocating space for the lock and initializing  mutex/locks on the GPU */
 	int *mutex_on_device = NULL;
-	cudaMalloc((void **) &mutex_on_device, sizeof(int));
-	cudaMemset(mutex_on_device, 0, sizeof(int));
+	cudaMalloc ((void **) &mutex_on_device, sizeof(int));
+	cudaMemset (mutex_on_device, 0, sizeof(int));
 
 	struct timeval start, stop;
 
-	printf("\nJacobi naive solution: \n");
+	printf("\nPerforming Jacobi Naive \n");
 	gettimeofday(&start, NULL);
 	/* Setting up the execution configuration for the naive kernel */
 	dim3 thread_block(1, THREAD_BLOCK_SIZE, 1);
@@ -175,7 +174,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 										(stop.tv_usec - start.tv_usec) / (float)1000000));
 
 
-	printf("\nJacobi Optimized Solution: \n");
+	printf("\nPerforming Jacobi Optimized \n");
 	gettimeofday(&start, NULL);
 	/* Jacobi optimized kernel */
 	thread_block.x = thread_block.y = TILE_SIZE;
@@ -229,8 +228,8 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 	cudaFree(d_new_x_naive.elements);
 	cudaFree(d_new_x_opt.elements);
 
-	cudaFree(new_x_naive.elements);
-	cudaFree(new_x_opt.elements);
+	free(new_x_naive.elements);
+	free(new_x_opt.elements);
 
     return;
 }
@@ -345,31 +344,4 @@ matrix_t create_diagonally_dominant_matrix(unsigned int num_rows, unsigned int n
 	}
 
     return M;
-}
-
-/* Checks the reference and GPU results. */
-int
-check_results (float *reference, float *gpu_result, int num_elements, float eps)
-{
-    int check = 1;
-    float max_eps = 0.0;
-    for (int i = 0; i < num_elements; i++) {
-        if (fabsf((reference[i] - gpu_result[i])/reference[i]) > eps) {
-            check = 0;
-			printf("Error at index %d\n",i);
-			printf("Element r %.10f and g %.10f\n", reference[i] ,gpu_result[i]);
-            break;
-        }
-	}
-
-	int maxEle = 0;
-    for (int i = 0; i < num_elements; i++) {
-        if (fabsf((reference[i] - gpu_result[i])/reference[i]) > max_eps) {
-            max_eps = fabsf ((reference[i] - gpu_result[i])/reference[i]);
-			maxEle=i;
-        }
-	}
-	printf ("Max epsilon = %f at i = %d value at cpu %f and gpu %f \n", max_eps, maxEle, reference[maxEle], gpu_result[maxEle]);
-
-    return check;
 }
