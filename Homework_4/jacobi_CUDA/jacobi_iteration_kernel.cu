@@ -13,6 +13,7 @@ __device__ void lock(int *mutex)
 __device__ void unlock(int *mutex)
 {
   atomicExch(mutex, 0);
+  return;
 }
 
 /* updating the x matrix for Jacobi Iteration */
@@ -62,7 +63,6 @@ __global__ void jacobi_iteration_kernel_naive(const matrix_t A, const matrix_t x
 
     /* Finding new unknown values */
     new_x = (B.elements[row] - sum) / A.elements[row * num_cols + row];
-
     __syncthreads();
 
       newSSD = (double) (new_x - x.elements[row]) * (new_x - x.elements[row]);
@@ -122,7 +122,6 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
       /* Tile size elements are being brought in for row of x and B into shared memory */
       if (threadY == 0)
         xTile[threadX] = x.elements[i + threadX];
-
       /* Barrier sync to ensure that shared memory has been populated */
       __syncthreads();
 
@@ -131,7 +130,6 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
         for (k = 0; k < TILE_SIZE; k += 1)
           sum += (double) aTile[threadY][k] * xTile[k];
       }
-
       __syncthreads();
     }
 
@@ -157,7 +155,7 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
           __syncthreads();
           i /= 2;
       }
-
+      
       if (threadY == 0){
         lock(mutex);
         *ssd += ssd_per_thread[0];
