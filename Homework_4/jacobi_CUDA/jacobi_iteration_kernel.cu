@@ -16,35 +16,19 @@ __device__ void unlock(int *mutex)
   return;
 }
 
-/* updating the x matrix for Jacobi Iteration */
-__global__ void jacobi_update_x(matrix_t sol_x, const matrix_t new_x)
-{
-  unsigned num_rows = sol_x.num_rows;
-
-  /* Calculate thread index, block index and position in matrix */
-  int threadY = threadIdx.y;
-  int threadX = threadIdx.x;
-  int blockY = blockIdx.y;
-  int row = blockDim.y * blockY + threadY;
-
-  if ((row < num_rows) && (threadX == 0)){
-    sol_x.elements[row] = new_x.elements[row];
-  }
-  return;
-}
 
 /* Jacobi iteration using global memory. The reference pattern to global memory by the threads are not coalesced*/
-__global__ void jacobi_iteration_kernel_naive(const matrix_t A, const matrix_t x, const matrix_t B, matrix_t x_update, int* mutex, double* ssd)
+__global__ void jacobi_iteration_kernel_naive(const matrix_t A, const matrix_t x, matrix_t x_update, const matrix_t B, int* mutex, double* ssd)
 {
-  __shared__ double ssd_per_thread[THREAD_BLOCK_SIZE];
+	__shared__ double ssd_per_thread[THREAD_BLOCK_SIZE];
   unsigned int num_rows = A.num_rows;
-  unsigned int num_cols = A.num_columns;
+	unsigned int num_cols = A.num_columns;
   float new_x;
-  double newSSD = 0.0;
+	double new_SSD = 0.0;
 
   /* Calculate thread index, block index and position in matrix */
   int threadY = threadIdx.y;
-  int blockY = blockIdx.y;
+	int blockY = blockIdx.y;
 
   /* Obtain row number or position row in matrix */
   int row = blockDim.y * blockY + threadY;
@@ -64,10 +48,10 @@ __global__ void jacobi_iteration_kernel_naive(const matrix_t A, const matrix_t x
     new_x = (B.elements[row] - sum) / A.elements[row * num_cols + row];
     __syncthreads();
 
-      newSSD = (double) (new_x - x.elements[row]) * (new_x - x.elements[row]);
+      new_SSD = (double) (new_x - x.elements[row]) * (new_x - x.elements[row]);
       x_update.elements[row] = new_x;
 
-      ssd_per_thread[threadY] = newSSD;
+      ssd_per_thread[threadY] = new_SSD;
       __syncthreads();
 
       /* SSD Reduction */
@@ -81,15 +65,15 @@ __global__ void jacobi_iteration_kernel_naive(const matrix_t A, const matrix_t x
 
       if (threadY == 0){
         lock(mutex);
-        *ssd  += ssd_per_thread[0];
+        *ssd += ssd_per_thread[0];
         unlock(mutex);
       }
   }
     return;
 }
 
-/* Jacobi iteration using global and shared memory.Threads maintain good reference patterns to global memory via coalesced accesses */
-__global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix_t x, const matrix_t B, matrix_t x_update, int* mutex, double* ssd)
+
+__global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix_t x, matrix_t x_update, const matrix_t B, int* mutex, double* ssd)
 {
   /* Declare shared memory for the thread block */
   __shared__ float aTile[TILE_SIZE][TILE_SIZE];
@@ -99,13 +83,15 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
   unsigned int num_rows = A.num_rows;
   unsigned int num_cols = A.num_columns;
   float new_x;
-  double newSSD = 0.0;
+  double new_SSD = 0.0;
   double sum = 0.0;
 
   /* Calculate thread index, block index and position in matrix */
   int threadX = threadIdx.x;
 	int threadY = threadIdx.y;
 	int blockY = blockIdx.y;
+
+  /* Obtain row number or position row in matrix */
 	int row = blockDim.y * blockY + threadY;
 
   unsigned int i, k;
@@ -123,24 +109,24 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
 
       /* computing jacobi partial sum on the current tile */
       if (threadX == 0){
-				for (k = 0; k < TILE_SIZE; k+=1)
-					sum += (double) aTile[threadY][k] * xTile[k];
+        for (k = 0; k < TILE_SIZE; k+=1)
+          sum += (double) aTile[threadY][k] * xTile[k];
 			}
 			__syncthreads();
 		}
 
-    if (threadX == 0){
-      float aDiag = A.elements[row * num_cols + row];
-      float xDiag = x.elements[row];
-      float bDiag = B.elements[row];
+    if (threadX == 0) {
+			float aDiag = A.elements[row * num_cols + row];
+    	float xDiag = x.elements[row];
+	    float bDiag = B.elements[row];
 
       sum += -aDiag * xDiag;
       new_x = (bDiag - sum) / aDiag;
 
-      newSSD = (double) (new_x - xDiag) * (new_x - xDiag);
+      new_SSD = (double) (new_x - xDiag) * (new_x - xDiag);
       x_update.elements[row] = new_x;
 
-      ssd_per_thread[threadY] = newSSD;
+      ssd_per_thread[threadY] = new_SSD;
       __syncthreads();
 
       /* SSD Reduction */
@@ -160,4 +146,21 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
     }
   }
   return;
+}
+
+/* Jacobi iteration using global and shared memory.Threads maintain good reference patterns to global memory via coalesced accesses */
+__global__ void jacobi_update_x (matrix_t sol_x, const matrix_t new_x)
+{
+    unsigned int num_rows = sol_x.num_rows;
+
+    /* Calculate thread index, block index and position in matrix */
+    int threadY = threadIdx.y;
+    int threadX = threadIdx.x;
+    int blockY = blockIdx.y;
+    int row = blockDim.y * blockY + threadY;
+
+    if ((row < num_rows) && (threadX == 0)){
+      sol_x.elements[row] = new_x.elements[row];
+    }
+    return;
 }

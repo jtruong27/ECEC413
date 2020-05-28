@@ -99,8 +99,10 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 	matrix_t new_x_naive = allocate_matrix_on_host(MATRIX_SIZE, 1, 0);
 	matrix_t new_x_opt = allocate_matrix_on_host(MATRIX_SIZE, 1, 0);
 
+	struct timeval start, stop;
+
 	/* initialize solution of x for GPU */
-	for (int i = 0; i < A.num_rows; i++){
+	for (unsigned int i = 0; i < A.num_rows; i++){
 		float e = B.elements[i];
 		gpu_naive_sol_x.elements[i] = e;
 		gpu_opt_sol_x.elements[i] = e;
@@ -108,37 +110,25 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 
 	/* Allocating space on device for matricies on the GPU with error checking */
 	matrix_t d_A = allocate_matrix_on_device(A);
-	check_CUDA_error("Allocating matrix A");
 	matrix_t d_naive_sol_x = allocate_matrix_on_device(gpu_naive_sol_x);
-	check_CUDA_error("Allocating matrix naive_sol_x");
 	matrix_t d_opt_sol_x = allocate_matrix_on_device(gpu_opt_sol_x);
-	check_CUDA_error("Allocating matrix opt_sol_x");
 	matrix_t d_B = allocate_matrix_on_device(B);
-	check_CUDA_error("Allocating matrix B");
 	matrix_t d_new_x_naive = allocate_matrix_on_device(new_x_naive);
-	check_CUDA_error("Allocating new_x_naive");
 	matrix_t d_new_x_opt = allocate_matrix_on_device(new_x_opt);
-	check_CUDA_error("Allocating new_x_opt");
 
 	/* Copying matricies A, B, and x solutions to GPU with error checking */
 	copy_matrix_to_device(d_A, A);
-	check_CUDA_error("Copying matrix A to device");
 	copy_matrix_to_device(d_B, B);
-	check_CUDA_error("Copying matrix B to device");
-	copy_matrix_to_device(d_naive_sol_x, gpu_naive_sol_x);
-	check_CUDA_error("Copying matrix naive_sol_x to device");
+	copy_matrix_to_device(d_naive_sol_x, gpu_naive_sol_x);;
 	copy_matrix_to_device(d_opt_sol_x, gpu_opt_sol_x);
-	check_CUDA_error("Copying matrix opt_sol_x to device");
 
 	/* Allocating space for the device ssd on the GPU */
 	cudaMalloc((void**) &d_ssd, sizeof(double));
 
 	/* Allocating space for the lock and initializing  mutex/locks on the GPU */
 	int *mutex_on_device = NULL;
-	cudaMalloc ((void **) &mutex_on_device, sizeof(int));
-	cudaMemset (mutex_on_device, 0, sizeof(int));
-
-	struct timeval start, stop;
+	cudaMalloc((void **) &mutex_on_device, sizeof(int));
+	cudaMemset(mutex_on_device, 0, sizeof(int));
 
 	printf("\nPerforming Jacobi Naive \n");
 	/* Setting up the execution configuration for the naive kernel */
