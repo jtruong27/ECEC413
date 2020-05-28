@@ -132,19 +132,19 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 
 	printf("\nPerforming Jacobi Naive \n");
 	/* Setting up the execution configuration for the naive kernel */
-	dim3 threadevice_Block(1, THREAdevice_BLOCK_SIZE, 1);
-	dim3 grid(1, (A.num_rows + THREAdevice_BLOCK_SIZE - 1)/ THREAdevice_BLOCK_SIZE);
+	dim3 thread_block(1, THREAD_BLOCK_SIZE, 1);
+	dim3 grid(1, (A.num_rows + THREAD_BLOCK_SIZE - 1)/ THREAD_BLOCK_SIZE);
 
 	gettimeofday(&start, NULL);
 	while (!done){
 		cudaMemset(d_ssd, 0.0, sizeof(double));
 
 		/* using jacboi iteration kernel naive */
-		jacobi_iteration_kernel_naive<<<grid, threadevice_Block>>>(device_A, device_naive_sol_x, device_new_x_naive, device_B, mutex_on_device, d_ssd);
+		jacobi_iteration_kernel_naive<<<grid, thread_block>>>(device_A, device_naive_sol_x, device_new_x_naive, device_B, mutex_on_device, d_ssd);
 		cudaDeviceSynchronize();
 		check_CUDA_error("KERNEL FAILURE: jacobi_iteration_kernel_naive\n");
 
-		jacobi_update_x<<<grid,threadevice_Block>>>(device_naive_sol_x, device_new_x_naive);
+		jacobi_update_x<<<grid,thread_block>>>(device_naive_sol_x, device_new_x_naive);
 		cudaDeviceSynchronize();
 		check_CUDA_error("KERNEL FAILURE: jacobi_update_x");
 
@@ -166,7 +166,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 
 	printf("\nPerforming Jacobi Optimized \n");
 	/* Jacobi optimized kernel */
-	threadevice_Block.x = threadevice_Block.y = TILE_SIZE;
+	thread_block.x = thread_block.y = TILE_SIZE;
 	grid.x = 1;
 	grid.y = (gpu_opt_sol_x.num_rows + TILE_SIZE - 1)/TILE_SIZE;
 
@@ -178,11 +178,11 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 		cudaMemset(d_ssd, 0.0, sizeof(double));
 
 		/* using jacboi iteration kernel optimized */
-		jacobi_iteration_kernel_optimized<<<grid, threadevice_Block>>>(device_A, device_opt_sol_x, device_new_x_opt, device_B, mutex_on_device, d_ssd);
+		jacobi_iteration_kernel_optimized<<<grid, thread_block>>>(device_A, device_opt_sol_x, device_new_x_opt, device_B, mutex_on_device, d_ssd);
         cudaDeviceSynchronize();
 				check_CUDA_error("KERNEL FAILURE: jacobi_iteration_kernel_optimized\n");
 
-		jacobi_update_x<<<grid,threadevice_Block>>>(device_opt_sol_x, device_new_x_opt);
+		jacobi_update_x<<<grid,thread_block>>>(device_opt_sol_x, device_new_x_opt);
         cudaDeviceSynchronize();
 				check_CUDA_error("KERNEL FAILURE: jacobi_update_x");
 
