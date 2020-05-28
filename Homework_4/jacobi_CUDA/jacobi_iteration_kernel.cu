@@ -155,7 +155,7 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
           __syncthreads();
           i /= 2;
       }
-      
+
       if (threadY == 0){
         lock(mutex);
         *ssd += ssd_per_thread[0];

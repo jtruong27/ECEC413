@@ -71,7 +71,9 @@ int main(int argc, char **argv)
 	/* Compute Jacobi solution on device. Solutions are returned in gpu_naive_solution_x and gpu_opt_solution_x. */
   printf("\nPerforming Jacobi iteration on device\n");
 	compute_on_device(A, gpu_naive_solution_x, gpu_opt_solution_x, B);
+	printf("\nShowing results for gpu_naive_solution\n");
   display_jacobi_solution(A, gpu_naive_solution_x, B); /* Display statistics */
+	printf("\nShowing results for gpu_opt_solution\n");
   display_jacobi_solution(A, gpu_opt_solution_x, B);
 
   free(A.elements);
@@ -142,8 +144,8 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 	printf("\nJacobi naive solution: \n");
 	gettimeofday(&start, NULL);
 	/* Setting up the execution configuration for the naive kernel */
-	dim3 thread_block (1, THREAD_BLOCK_SIZE, 1);
-	dim3 grid (1, (A.num_rows + THREAD_BLOCK_SIZE - 1)/ THREAD_BLOCK_SIZE);
+	dim3 thread_block(1, THREAD_BLOCK_SIZE, 1);
+	dim3 grid(1, (A.num_rows + THREAD_BLOCK_SIZE - 1)/ THREAD_BLOCK_SIZE);
 
 	while (!done){
 		cudaMemset(d_ssd, 0.0, sizeof(double));
@@ -196,7 +198,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 				check_CUDA_error("KERNEL FAILURE: jacobi_update_x");
 
         /* Check for convergence and update the unknowns. */
-        cudaMemcpy (&ssd, d_ssd, sizeof (double), cudaMemcpyDeviceToHost);
+        cudaMemcpy(&ssd, d_ssd, sizeof (double), cudaMemcpyDeviceToHost);
         num_iter++;
         mse = sqrt(ssd);
 
