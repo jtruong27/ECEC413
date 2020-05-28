@@ -28,11 +28,11 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-    matrix_t  A;                    /* N x N constant matrix */
-		matrix_t  B;                    /* N x 1 b matrix */
-		matrix_t reference_x;           /* Reference solution */
-		matrix_t gpu_naive_solution_x;  /* Solution computed by naive kernel */
-    matrix_t gpu_opt_solution_x;    /* Solution computed by optimized kernel */
+	matrix_t  A;                    /* N x N constant matrix */
+	matrix_t  B;                    /* N x 1 b matrix */
+	matrix_t reference_x;           /* Reference solution */
+	matrix_t gpu_naive_solution_x;  /* Solution computed by naive kernel */
+  matrix_t gpu_opt_solution_x;    /* Solution computed by optimized kernel */
 
 	/* Initialize the random number generator */
 	srand(time(NULL));
@@ -41,8 +41,8 @@ int main(int argc, char **argv)
   printf("\nGenerating %d x %d system\n", MATRIX_SIZE, MATRIX_SIZE);
 	A = create_diagonally_dominant_matrix(MATRIX_SIZE, MATRIX_SIZE);
 	if (A.elements == NULL) {
-        printf("Error creating matrix\n");
-        exit(EXIT_FAILURE);
+		printf("Error creating matrix\n");
+    exit(EXIT_FAILURE);
 	}
 
   /* Create the other vectors */
@@ -51,47 +51,45 @@ int main(int argc, char **argv)
 	gpu_naive_solution_x = allocate_matrix_on_host(MATRIX_SIZE, 1, 0);
   gpu_opt_solution_x = allocate_matrix_on_host(MATRIX_SIZE, 1, 0);
 
-#ifdef DEBUG
-	print_matrix(A);
-	print_matrix(B);
-	print_matrix(reference_x);
-#endif
+	#ifdef DEBUG
+		print_matrix(A);
+		print_matrix(B);
+		print_matrix(reference_x);
+	#endif
 
-		struct timeval start, stop;
+	struct timeval start, stop;
 
-    /* Compute Jacobi solution on CPU */
-		printf("\nPerforming Jacobi iteration on the CPU\n");
-		gettimeofday(&start, NULL);
-    compute_gold(A, reference_x, B);
-		gettimeofday(&stop, NULL);
-		fprintf(stderr, "Execution time = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
-									(stop.tv_usec - start.tv_usec)/(float)1000000));
-    display_jacobi_solution(A, reference_x, B); /* Display statistics */
+	gettimeofday(&start, NULL);
+  /* Compute Jacobi solution on CPU */
+	printf("\nPerforming Jacobi iteration on the CPU\n");
+  compute_gold(A, reference_x, B);
+  display_jacobi_solution(A, reference_x, B); /* Display statistics */
+	gettimeofday(&stop, NULL);
+	fprintf(stderr, "Execution time for GPU-Naive = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
+										(stop.tv_usec - start.tv_usec) / (float)1000000));
 
 	/* Compute Jacobi solution on device. Solutions are returned in gpu_naive_solution_x and gpu_opt_solution_x. */
-    printf("\nPerforming Jacobi iteration on device\n");
-		compute_on_device(A, gpu_naive_solution_x, gpu_opt_solution_x, B);
-		printf("\nGPU Naive Solution:\n");
-    display_jacobi_solution(A, gpu_naive_solution_x, B); /* Display statistics and solution */
-		printf("\nGPU Optimize Solution:\n");
-    display_jacobi_solution(A, gpu_opt_solution_x, B); /* Display statistics snd solution */
+  printf("\nPerforming Jacobi iteration on device\n");
+	compute_on_device(A, gpu_naive_solution_x, gpu_opt_solution_x, B);
+  display_jacobi_solution(A, gpu_naive_solution_x, B); /* Display statistics */
+  display_jacobi_solution(A, gpu_opt_solution_x, B);
 
-    free(A.elements);
-		free(B.elements);
-		free(reference_x.elements);
-		free(gpu_naive_solution_x.elements);
-    free(gpu_opt_solution_x.elements);
+  free(A.elements);
+	free(B.elements);
+	free(reference_x.elements);
+	free(gpu_naive_solution_x.elements);
+  free(gpu_opt_solution_x.elements);
 
-    exit(EXIT_SUCCESS);
+  exit(EXIT_SUCCESS);
 }
 
 
 /* FIXME: Complete this function to perform Jacobi calculation on device */
-void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
-                       matrix_t gpu_opt_sol_x, const matrix_t B)
+void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_opt_sol_x, const matrix_t B)
 {
 	unsigned int done = 0;
 	unsigned int num_iter = 0;
+	unsigned int i;
 	double ssd, mse;
 
 	double *d_ssd = NULL; /* Pointer to device address holding ssd */
@@ -101,8 +99,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 	matrix_t new_x_opt = allocate_matrix_on_host(MATRIX_SIZE, 1, 0);
 
 	/* initialize solution of x for GPU */
-	for (int i = 0; i < A.num_rows; i++)
-	{
+	for (i = 0; i < A.num_rows; i++){
 		float e = B.elements[i];
 		gpu_naive_sol_x.elements[i] = e;
 		gpu_opt_sol_x.elements[i] = e;
@@ -124,13 +121,13 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 
 	/* Copying matricies A, B, and x solutions to GPU with error checking */
 	copy_matrix_to_device(d_A, A);
-	check_CUDA_error("Copying matrix A over to device");
+	check_CUDA_error("Copying matrix A to device");
 	copy_matrix_to_device(d_B, B);
-	check_CUDA_error("Copying matrix B over to device");
+	check_CUDA_error("Copying matrix B to device");
 	copy_matrix_to_device(d_naive_sol_x, gpu_naive_sol_x);
-	check_CUDA_error("Copying matrix naive_sol_x over to device");
+	check_CUDA_error("Copying matrix naive_sol_x to device");
 	copy_matrix_to_device(d_opt_sol_x, gpu_opt_sol_x);
-	check_CUDA_error("Copying matrix opt_sol_x over to device");
+	check_CUDA_error("Copying matrix opt_sol_x to device");
 
 	/* Allocating space for the device ssd on the GPU */
 	cudaMalloc((void**) &d_ssd, sizeof(double));
@@ -142,18 +139,17 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 
 	struct timeval start, stop;
 
+	printf("\nJacobi naive solution: \n");
 	gettimeofday(&start, NULL);
 	/* Setting up the execution configuration for the naive kernel */
-	dim3 thread_block(1, THREAD_BLOCK_SIZE, 1);
-	dim3 grid(1, (A.num_rows + THREAD_BLOCK_SIZE - 1) / THREAD_BLOCK_SIZE);
-	printf ("Performing Jacobi Naive Solution:\n");
+	dim3 thread_block (1, THREAD_BLOCK_SIZE, 1);
+	dim3 grid (1, (A.num_rows + THREAD_BLOCK_SIZE - 1)/ THREAD_BLOCK_SIZE);
 
 	while (!done){
 		cudaMemset(d_ssd, 0.0, sizeof(double));
 
 		/* using jacboi iteration kernel naive */
-		jacobi_iteration_kernel_naive<<<grid, thread_block>>>(d_A, d_naive_sol_x, d_new_x_naive,
-																										 d_B, mutex_on_device, d_ssd);
+		jacobi_iteration_kernel_naive<<<grid, thread_block>>>(d_A, d_naive_sol_x, d_new_x_naive, d_B, mutex_on_device, d_ssd);
 		cudaDeviceSynchronize();
 		check_CUDA_error("KERNEL FAILURE: jacobi_iteration_kernel_naive\n");
 
@@ -168,49 +164,47 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 
 		if (mse <= THRESHOLD){
 			done = 1;
-			printf("\nConvergence achieved after %d iterations \n", num_iter);
+			printf ("\nConvergence achieved after %d iterations \n", num_iter);
 		}
-		// printf("Iteration: %d. MSE = %f\n", num_iter, mse);
+		// printf ("Iteration: %d. MSE = %f\n", num_iter, mse);
 	}
 	gettimeofday(&stop, NULL);
 	fprintf(stderr, "Execution time for GPU-Naive = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
 										(stop.tv_usec - start.tv_usec) / (float)1000000));
 
 
+	printf("\nJacobi Optimized Solution: \n");
 	gettimeofday(&start, NULL);
 	/* Jacobi optimized kernel */
 	thread_block.x = thread_block.y = TILE_SIZE;
 	grid.x = 1;
-	grid.y = (gpu_opt_sol_x.num_rows + TILE_SIZE - 1) / TILE_SIZE;
+	grid.y = (gpu_opt_sol_x.num_rows + TILE_SIZE - 1)/TILE_SIZE;
 
-	printf("\nPerforming Jacobi Optimized Solution:\n");
 	done = 0;
 	num_iter = 0;
 
 	while (!done){
-		cudaMemset(d_ssd, 0.0, sizeof(double));
+		cudaMemset (d_ssd, 0.0, sizeof(double));
 
 		/* using jacboi iteration kernel optimized */
-		jacobi_iteration_kernel_optimized<<<grid, thread_block>>>(d_A, d_opt_sol_x, d_new_x_opt,
-																												 d_B, mutex_on_device, d_ssd);
-
-    cudaDeviceSynchronize();
-		check_CUDA_error("KERNEL FAILURE: jacobi_iteration_kernel_optimized\n");
+		jacobi_iteration_kernel_optimized<<<grid, thread_block>>>(d_A, d_opt_sol_x, d_new_x_opt, d_B, mutex_on_device, d_ssd);
+        cudaDeviceSynchronize();
+				check_CUDA_error("KERNEL FAILURE: jacobi_iteration_kernel_optimized\n");
 
 		jacobi_update_x<<<grid,thread_block>>>(d_opt_sol_x, d_new_x_opt);
-    cudaDeviceSynchronize();
-		check_CUDA_error("KERNEL FAILURE: jacobi_update_x");
+        cudaDeviceSynchronize();
+				check_CUDA_error("KERNEL FAILURE: jacobi_update_x");
 
-    /* Check for convergence and update the unknowns. */
-    cudaMemcpy(&ssd, d_ssd, sizeof(double), cudaMemcpyDeviceToHost);
-    num_iter++;
-    mse = sqrt(ssd); /* Mean squared error. */
+        /* Check for convergence and update the unknowns. */
+        cudaMemcpy (&ssd, d_ssd, sizeof (double), cudaMemcpyDeviceToHost);
+        num_iter++;
+        mse = sqrt(ssd);
 
-    if (mse <= THRESHOLD){
-			done = 1;
-      printf("\nConvergence achieved after %d iterations \n", num_iter);
+      	if (mse <= THRESHOLD){
+            done = 1;
+            printf ("\nConvergence achieved after %d iterations \n", num_iter);
 		}
-		// printf("Iteration: %d. MSE = %f\n", num_iter, mse);
+		// printf ("Iteration: %d. MSE = %f\n", num_iter, mse);
 	}
 	gettimeofday(&stop, NULL);
 	fprintf(stderr, "Execution time for GPU-Optimized = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
@@ -233,13 +227,13 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 	cudaFree(d_new_x_naive.elements);
 	cudaFree(d_new_x_opt.elements);
 
-	free(new_x_naive.elements);
-	free(new_x_opt.elements);
+	cudaFree(new_x_naive.elements);
+	cudaFree(new_x_opt.elements);
 
-	return;
+    return;
 }
 
-/* Allocating the matrix on the device of same size as  matrix M */
+/* Allocate matrix on the device of same size as M */
 matrix_t allocate_matrix_on_device(const matrix_t M)
 {
     matrix_t Mdevice = M;
@@ -293,7 +287,7 @@ void print_matrix(const matrix_t M)
 {
 	for (unsigned int i = 0; i < M.num_rows; i++) {
         for (unsigned int j = 0; j < M.num_columns; j++) {
-			printf("%f ", M.elements[i * M.num_columns + j]);
+			printf("%f ", M.elements[i * M.columns + j]);
         }
 
         printf("\n");
