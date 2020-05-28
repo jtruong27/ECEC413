@@ -90,11 +90,10 @@ int main(int argc, char **argv)
 void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
                        matrix_t gpu_opt_sol_x, const matrix_t B)
 {
-	int done = 0;
-	int num_iter = 0;
+	unsigned int done = 0;
+	unsigned int num_iter = 0;
+	double ssd, mse;
 
-	double ssd;
-	double mse;
 	double *d_ssd = NULL; /* Pointer to device address holding ssd */
 
 	/* Allocate matrices to hold iteration values */
@@ -151,7 +150,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 	gettimeofday(&start, NULL);
 
 	while (!done){
-		cudaMemset (d_ssd, 0.0, sizeof(double));
+		cudaMemset(d_ssd, 0.0, sizeof(double));
 
 		/* using jacboi iteration kernel naive */
 		jacobi_iteration_kernel_naive<<<grid, threads>>>(d_A, d_naive_sol_x, d_new_x_naive,
