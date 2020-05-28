@@ -172,6 +172,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 			done = 1;
 			printf ("\nConvergence achieved after %d iterations \n", num_iter);
 		}
+		printf ("Iteration: %d. MSE = %f\n", num_iter, mse);
 	}
 	gettimeofday(&stop, NULL);
 	fprintf(stderr, "Execution time for GPU-Naive = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
@@ -194,7 +195,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 		/* using jacboi iteration kernel optimized */
 		jacobi_iteration_kernel_optimized<<<grid, threads>>>(device_A, device_opt_sol_x, device_new_x_opt,
 																												 device_B, mutex_on_device, device_ssd);
-																												 
+
     check_CUDA_error("KERNEL FAILURE: jacobi_iteration_kernel_optimized\n");
     cudaDeviceSynchronize ();
 
@@ -211,6 +212,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 			done = 1;
       printf ("\nConvergence achieved after %d iterations \n", num_iter);
 		}
+		printf ("Iteration: %d. MSE = %f\n", num_iter, mse);
 	}
 	gettimeofday(&stop, NULL);
 	fprintf(stderr, "Execution time for GPU-Optimized = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
