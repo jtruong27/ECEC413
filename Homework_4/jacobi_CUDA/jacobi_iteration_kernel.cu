@@ -2,6 +2,20 @@
 
 /* FIXME: Write the device kernels to solve the Jacobi iterations */
 
+/* function is used to compare and swap technique to get a mutex/lock */
+__device__ void lock(int *mutex)
+{
+  while(atomicCAS(mutex, 0, 1) != 0);
+  return;
+}
+
+/* function uses atomic exchange operation to release the mutex/lock */
+__device__ void unlock(int *mutex)
+{
+  atomicExch(mutex, 0);
+  return;
+}
+
 /* Jacobi iteration using global and shared memory.Threads maintain good reference patterns to global memory via coalesced accesses */
 __global__ void jacobi_update_x (matrix_t sol_x, const matrix_t new_x)
 {
@@ -147,19 +161,5 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
       }
     }
   }
-  return;
-}
-
-/* function is used to compare and swap technique to get a mutex/lock */
-__device__ void lock(int *mutex)
-{
-  while(atomicCAS(mutex, 0, 1) != 0);
-  return;
-}
-
-/* function uses atomic exchange operation to release the mutex/lock */
-__device__ void unlock(int *mutex)
-{
-  atomicExch(mutex, 0);
   return;
 }
