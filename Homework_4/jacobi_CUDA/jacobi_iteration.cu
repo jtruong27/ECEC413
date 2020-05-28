@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   compute_gold(A, reference_x, B);
   display_jacobi_solution(A, reference_x, B); /* Display statistics */
 	gettimeofday(&stop, NULL);
-	fprintf(stderr, "Execution time for GPU-Naive = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
+	fprintf(stderr, "Execution time for CPU = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
 										(stop.tv_usec - start.tv_usec) / (float)1000000));
 
 	/* Compute Jacobi solution on device. Solutions are returned in gpu_naive_solution_x and gpu_opt_solution_x. */
