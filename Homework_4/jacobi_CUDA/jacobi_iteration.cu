@@ -89,8 +89,8 @@ int main(int argc, char **argv)
 /* FIXME: Complete this function to perform Jacobi calculation on device */
 void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_opt_sol_x, const matrix_t B)
 {
-	unsigned int done = 0;
-	unsigned int num_iter = 0;
+	int done = 0;
+	int num_iter = 0;
 	double ssd, mse;
 
 	double *d_ssd = NULL; /* Pointer to device address holding ssd */
@@ -100,7 +100,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 	matrix_t new_x_opt = allocate_matrix_on_host(MATRIX_SIZE, 1, 0);
 
 	/* initialize solution of x for GPU */
-	for (unsigned int i = 0; i < A.num_rows; i++){
+	for (int i = 0; i < A.num_rows; i++){
 		float e = B.elements[i];
 		gpu_naive_sol_x.elements[i] = e;
 		gpu_opt_sol_x.elements[i] = e;
@@ -131,7 +131,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 	check_CUDA_error("Copying matrix opt_sol_x to device");
 
 	/* Allocating space for the device ssd on the GPU */
-	cudaMalloc((void**) &d_ssd, sizeof (double));
+	cudaMalloc((void**) &d_ssd, sizeof(double));
 
 	/* Allocating space for the lock and initializing  mutex/locks on the GPU */
 	int *mutex_on_device = NULL;
@@ -141,11 +141,11 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 	struct timeval start, stop;
 
 	printf("\nPerforming Jacobi Naive \n");
-	gettimeofday(&start, NULL);
 	/* Setting up the execution configuration for the naive kernel */
 	dim3 thread_block(1, THREAD_BLOCK_SIZE, 1);
 	dim3 grid(1, (A.num_rows + THREAD_BLOCK_SIZE - 1)/ THREAD_BLOCK_SIZE);
 
+	gettimeofday(&start, NULL);
 	while (!done){
 		cudaMemset(d_ssd, 0.0, sizeof(double));
 
@@ -175,7 +175,6 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 
 
 	printf("\nPerforming Jacobi Optimized \n");
-	gettimeofday(&start, NULL);
 	/* Jacobi optimized kernel */
 	thread_block.x = thread_block.y = TILE_SIZE;
 	grid.x = 1;
@@ -184,8 +183,9 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 	done = 0;
 	num_iter = 0;
 
+	gettimeofday(&start, NULL);
 	while (!done){
-		cudaMemset (d_ssd, 0.0, sizeof(double));
+		cudaMemset(d_ssd, 0.0, sizeof(double));
 
 		/* using jacboi iteration kernel optimized */
 		jacobi_iteration_kernel_optimized<<<grid, thread_block>>>(d_A, d_opt_sol_x, d_new_x_opt, d_B, mutex_on_device, d_ssd);
@@ -231,7 +231,7 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x, matrix_t gpu_
 	free(new_x_naive.elements);
 	free(new_x_opt.elements);
 
-    return;
+  return;
 }
 
 /* Allocate matrix on the device of same size as M */

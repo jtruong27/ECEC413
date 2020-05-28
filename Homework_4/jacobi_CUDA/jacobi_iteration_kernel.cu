@@ -30,7 +30,6 @@ __global__ void jacobi_update_x(matrix_t sol_x, const matrix_t new_x)
   if ((row < num_rows) && (threadX == 0)){
     sol_x.elements[row] = new_x.elements[row];
   }
-
   return;
 }
 
