@@ -90,8 +90,6 @@ int main(int argc, char **argv)
 void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
                        matrix_t gpu_opt_sol_x, const matrix_t B)
 {
-	struct timeval start, stop;
-
 	int done = 0;
 	int num_iter = 0;
 
@@ -113,22 +111,23 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 	/* Allocating space on device for matricies on the GPU */
 	matrix_t device_A = allocate_matrix_on_device(A);
 	check_CUDA_error("Allocating matrix A");
-	matrix_t device_navive_sol_x = allocate_matrix_on_device(gpu_naive_sol_x);
+	matrix_t device_naive_sol_x = allocate_matrix_on_device(gpu_naive_sol_x);
 	check_CUDA_error("Allocating matrix naive_sol_x");
 	matrix_t device_opt_sol_x = allocate_matrix_on_device(gpu_opt_sol_x);
 	check_CUDA_error("Allocating matrix opt_sol_x");
 	matrix_t device_B = allocate_matrix_on_device(B);
 	check_CUDA_error("Allocating matrix B");
-	matrix_t device_new_x_naiveive = allocate_matrix_on_device(new_x_naive);
+	matrix_t device_new_x_naive = allocate_matrix_on_device(new_x_naive);
 	check_CUDA_error("Allocating new_x_naive");
-	matrix_t device_new_x_opt_opt = allocate_matrix_on_device(new_x_opt);
+	matrix_t device_new_x_opt = allocate_matrix_on_device(new_x_opt);
+	check_CUDA_error("Allocating new_x_opt");
 
 	/* Copying matricies A, B, and x solutions to GPU */
 	copy_matrix_to_device(device_A, A);
 	check_CUDA_error("Copying matrix A over to device");
 	copy_matrix_to_device(device_B, B);
 	check_CUDA_error("Copying matrix B over to device");
-	copy_matrix_to_device(device_navive_sol_x, gpu_naive_sol_x);
+	copy_matrix_to_device(device_naive_sol_x, gpu_naive_sol_x);
 	check_CUDA_error("Copying matrix naive_sol_x over to device");
 	copy_matrix_to_device(device_opt_sol_x, gpu_opt_sol_x);
 	check_CUDA_error("Copying matrix opt_sol_x over to device");
@@ -141,21 +140,26 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 	cudaMalloc ((void **) &mutex_on_device, sizeof(int));
 	cudaMemset (mutex_on_device, 0, sizeof(int));
 
+	struct timeval start, stop;
+
 	/* Setting up the execution configuration for the naive kernel */
 	dim3 threads(1, THREAD_BLOCK_SIZE, 1);
-	dim3 grid(1, (A.num_rows + THREAD_BLOCK_SIZE - 1)/ THREAD_BLOCK_SIZE);
+	dim3 grid(1, (A.num_rows + THREAD_BLOCK_SIZE - 1) / THREAD_BLOCK_SIZE);
 	printf ("Performing Jacobi Naive Solution:\n");
+
 	gettimeofday(&start, NULL);
 
-	while (!done) {
+	while (!done){
 		cudaMemset (device_ssd, 0.0, sizeof(double));
 
 		/* using jacboi iteration kernel naive */
-		jacobi_iteration_kernel_naive<<<grid, threads>>>(device_A, device_navive_sol_x, device_new_x_naiveive, device_B, mutex_on_device, device_ssd);
+		jacobi_iteration_kernel_naive<<<grid, threads>>>(device_A, device_naive_sol_x, device_new_x_naive,
+																										 device_B, mutex_on_device, device_ssd);
+
 		check_CUDA_error("KERNEL FAILURE: jacobi_iteration_kernel_naive\n");
 		cudaDeviceSynchronize ();
 
-		jacobi_update_x<<<grid,threads>>>(device_navive_sol_x, device_new_x_naiveive);
+		jacobi_update_x<<<grid,threads>>>(device_naive_sol_x, device_new_x_naive);
 		check_CUDA_error("KERNEL FAILURE: jacobi_update_x");
 		cudaDeviceSynchronize();
 
@@ -173,25 +177,28 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 	fprintf(stderr, "Execution time for GPU-Naive = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
 										(stop.tv_usec - start.tv_usec)/(float)1000000));
 
-		/* Jacobi optimized kernel */
-		threads.x = threads.y = TILE_SIZE;
-		grid.x = 1;
-		grid.y = (gpu_opt_sol_x.num_rows + TILE_SIZE - 1)/TILE_SIZE;
 
-		printf("\nPerforming Jacobi Optimized Solution:\n");
-		gettimeofday(&start, NULL);
-		done = 0;
-		num_iter = 0;
+	/* Jacobi optimized kernel */
+	threads.x = threads.y = TILE_SIZE;
+	grid.x = 1;
+	grid.y = (gpu_opt_sol_x.num_rows + TILE_SIZE - 1)/TILE_SIZE;
 
+	printf("\nPerforming Jacobi Optimized Solution:\n");
+	done = 0;
+	num_iter = 0;
+
+	gettimeofday(&start, NULL);
 	while (!done){
 		cudaMemset (device_ssd, 0.0, sizeof(double));
 
 		/* using jacboi iteration kernel optimized */
-		jacobi_iteration_kernel_optimized<<<grid, threads>>>(device_A, device_opt_sol_x, device_new_x_opt_opt, device_B, mutex_on_device, device_ssd);
+		jacobi_iteration_kernel_optimized<<<grid, threads>>>(device_A, device_opt_sol_x, device_new_x_opt,
+																												 device_B, mutex_on_device, device_ssd);
+																												 
     check_CUDA_error("KERNEL FAILURE: jacobi_iteration_kernel_optimized\n");
     cudaDeviceSynchronize ();
 
-		jacobi_update_x<<<grid,threads>>>(device_opt_sol_x, device_new_x_opt_opt);
+		jacobi_update_x<<<grid,threads>>>(device_opt_sol_x, device_new_x_opt);
     check_CUDA_error("KERNEL FAILURE: jacobi_update_x");
     cudaDeviceSynchronize();
 
@@ -210,21 +217,21 @@ void compute_on_device(const matrix_t A, matrix_t gpu_naive_sol_x,
 										(stop.tv_usec - start.tv_usec)/(float)1000000));
 
 	/* Copying the solutions back from GPU */
-	copy_matrix_from_device(gpu_naive_sol_x, device_navive_sol_x);
-	check_CUDA_error("Copying matrix device_navive_sol_x from device");
+	copy_matrix_from_device(gpu_naive_sol_x, device_naive_sol_x);
+	check_CUDA_error("Copying matrix device_naive_sol_x from device");
 	copy_matrix_from_device(gpu_opt_sol_x, device_opt_sol_x);
 	check_CUDA_error("Copying matrix device_opt_sol_x from device");
 
 	/* Freeing memory on GPU/ Clean up device memory */
 	cudaFree(device_A.elements);
 	cudaFree(device_B.elements);
-	cudaFree(device_navive_sol_x.elements);
+	cudaFree(device_naive_sol_x.elements);
 	cudaFree(device_opt_sol_x.elements);
 	cudaFree(device_ssd);
 
 	cudaFree(mutex_on_device);
-	cudaFree(device_new_x_naiveive.elements);
-	cudaFree(device_new_x_opt_opt.elements);
+	cudaFree(device_new_x_naive.elements);
+	cudaFree(device_new_x_opt.elements);
 
 	free (new_x_naive.elements);
 	free (new_x_opt.elements);

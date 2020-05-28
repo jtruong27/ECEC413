@@ -120,18 +120,16 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
       aTile[threadY][threadX] = A.elements[row * num_cols + i + threadX];
 
       /* Tile size elements are being brought in for row of x and B into shared memory */
-      if (threadY == 0){
+      if (threadY == 0)
         xTile[threadX] = x.elements[i + threadX];
-      }
+
       /* Barrier sync to ensure that shared memory has been populated */
       __syncthreads();
 
       /* computing jacobi partial sum on the current tile */
       if (threadX){
         for (k = 0; k < TILE_SIZE; k += 1)
-        {
           sum += (double) aTile[threadY][k] * xTile[k];
-        }
       }
 
       __syncthreads();
@@ -155,11 +153,10 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
       /* SSD Reduction */
       i = blockDim.y / 2;
       while (i != 0){
-        if (threadY < i){
+        if (threadY < i)
           ssd_per_thread[threadY] += ssd_per_thread[threadY + i];
           __syncthreads();
           i /= 2;
-        }
       }
 
       if (threadY == 0){
@@ -170,5 +167,5 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
     }
   }
 
-    return;
+  return;
 }
