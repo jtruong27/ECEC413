@@ -147,7 +147,6 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
       x_update.elements[row] = new_x;
 
       ssd_per_thread[threadY] = newSSD;
-
       __syncthreads();
 
       /* SSD Reduction */
