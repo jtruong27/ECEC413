@@ -287,7 +287,7 @@ void print_matrix(const matrix_t M)
 {
 	for (unsigned int i = 0; i < M.num_rows; i++) {
         for (unsigned int j = 0; j < M.num_columns; j++) {
-			printf("%f ", M.elements[i * M.columns + j]);
+			printf("%f ", M.elements[i * M.num_columns + j]);
         }
 
         printf("\n");
