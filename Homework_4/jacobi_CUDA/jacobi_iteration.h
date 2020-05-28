@@ -34,5 +34,6 @@ int perform_simple_check(const matrix_t);
 void print_matrix(const matrix_t);
 float get_random_number(int, int);
 void check_CUDA_error(const char *);
+int check_results (float *, float *, int, float);
 
 #endif /* _JACOBI_ITERATION_H_ */

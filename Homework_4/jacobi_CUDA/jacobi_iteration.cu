@@ -346,3 +346,30 @@ matrix_t create_diagonally_dominant_matrix(unsigned int num_rows, unsigned int n
 
     return M;
 }
+
+/* Checks the reference and GPU results. */
+int
+check_results (float *reference, float *gpu_result, int num_elements, float eps)
+{
+    int check = 1;
+    float max_eps = 0.0;
+    for (int i = 0; i < num_elements; i++) {
+        if (fabsf((reference[i] - gpu_result[i])/reference[i]) > eps) {
+            check = 0;
+			printf("Error at index %d\n",i);
+			printf("Element r %.10f and g %.10f\n", reference[i] ,gpu_result[i]);
+            break;
+        }
+	}
+
+	int maxEle = 0;
+    for (int i = 0; i < num_elements; i++) {
+        if (fabsf((reference[i] - gpu_result[i])/reference[i]) > max_eps) {
+            max_eps = fabsf ((reference[i] - gpu_result[i])/reference[i]);
+			maxEle=i;
+        }
+	}
+	printf ("Max epsilon = %f at i = %d value at cpu %f and gpu %f \n", max_eps, maxEle, reference[maxEle], gpu_result[maxEle]);
+
+    return check;
+}
