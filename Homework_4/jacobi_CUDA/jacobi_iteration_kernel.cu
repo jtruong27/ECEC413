@@ -2,20 +2,22 @@
 
 /* FIXME: Write the device kernels to solve the Jacobi iterations */
 
-/* function is used to compare and swap technique to get a mutex/lock */
-__device__ void lock(int *mutex)
+/* Jacobi iteration using global and shared memory.Threads maintain good reference patterns to global memory via coalesced accesses */
+__global__ void jacobi_update_x (matrix_t sol_x, const matrix_t new_x)
 {
-  while(atomicCAS(mutex, 0, 1) != 0);
-  return;
-}
+    unsigned int num_rows = sol_x.num_rows;
 
-/* function uses atomic exchange operation to release the mutex/lock */
-__device__ void unlock(int *mutex)
-{
-  atomicExch(mutex, 0);
-  return;
-}
+    /* Calculate thread index, block index and position in matrix */
+    int threadY = threadIdx.y;
+    int threadX = threadIdx.x;
+    int blockY = blockIdx.y;
+    int row = blockDim.y * blockY + threadY;
 
+    if ((row < num_rows) && (threadX == 0)){
+      sol_x.elements[row] = new_x.elements[row];
+    }
+    return;
+}
 
 /* Jacobi iteration using global memory. The reference pattern to global memory by the threads are not coalesced*/
 __global__ void jacobi_iteration_kernel_naive(const matrix_t A, const matrix_t x, matrix_t x_update, const matrix_t B, int* mutex, double* ssd)
@@ -148,19 +150,16 @@ __global__ void jacobi_iteration_kernel_optimized(const matrix_t A, const matrix
   return;
 }
 
-/* Jacobi iteration using global and shared memory.Threads maintain good reference patterns to global memory via coalesced accesses */
-__global__ void jacobi_update_x (matrix_t sol_x, const matrix_t new_x)
+/* function is used to compare and swap technique to get a mutex/lock */
+__device__ void lock(int *mutex)
 {
-    unsigned int num_rows = sol_x.num_rows;
+  while(atomicCAS(mutex, 0, 1) != 0);
+  return;
+}
 
-    /* Calculate thread index, block index and position in matrix */
-    int threadY = threadIdx.y;
-    int threadX = threadIdx.x;
-    int blockY = blockIdx.y;
-    int row = blockDim.y * blockY + threadY;
-
-    if ((row < num_rows) && (threadX == 0)){
-      sol_x.elements[row] = new_x.elements[row];
-    }
-    return;
+/* function uses atomic exchange operation to release the mutex/lock */
+__device__ void unlock(int *mutex)
+{
+  atomicExch(mutex, 0);
+  return;
 }
