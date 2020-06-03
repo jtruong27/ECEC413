@@ -65,13 +65,13 @@ int main(int argc, char **argv)
         perror("malloc");
         exit(EXIT_FAILURE);
     }
-    gettimeofday (&start, NULL);
+    gettimeofday(&start, NULL);
     memset(sorted_array_reference, 0, num_elements);
     status = counting_sort_gold(input_array, sorted_array_reference, num_elements, range);
     if (status == -1) {
         exit(EXIT_FAILURE);
     }
-    gettimeofday (&stop, NULL);
+    gettimeofday(&stop, NULL);
     fprintf(stderr, "Execution time for CPU = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
     										(stop.tv_usec - start.tv_usec) / (float)1000000));
 
@@ -113,8 +113,6 @@ int main(int argc, char **argv)
 /* FIXME: Write the GPU implementation of counting sort */
 void compute_on_device(int *input_array, int *sorted_array, int num_elements, int range)
 {
-  struct timeval start, stop;
-
   int *device_input = NULL;
   int *device_output = NULL;
 
@@ -143,7 +141,7 @@ void compute_on_device(int *input_array, int *sorted_array, int num_elements, in
   /* CUDA copying memory from host to device */
   cudaMemcpy(device_output, sorted_array, num_elements * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(device_input, input_array, num_elements * sizeof(int), cudaMemcpyHostToDevice);
-  cudaMemcpy(device_hist, hist, HISTOGRAM_SIZE * sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy(device_hist, histogram, HISTOGRAM_SIZE * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(device_scan, scan_out, HISTOGRAM_SIZE * sizeof(int), cudaMemcpyHostToDevice);
 
   /* Kernel Configuration */
@@ -152,7 +150,7 @@ void compute_on_device(int *input_array, int *sorted_array, int num_elements, in
 
   struct timeval start, stop;
 
-  gettimeofday (&start, NULL);
+  gettimeofday(&start, NULL);
   /* Histogram generation */
   kernel_histogram<<<grid, thread_block>>>(device_input, device_hist, num_elements, HISTOGRAM_SIZE);
   cudaDeviceSynchronize();
@@ -179,7 +177,7 @@ void compute_on_device(int *input_array, int *sorted_array, int num_elements, in
   /* Copying results back from GPU */
   cudaMemcpy(sorted_array, device_output, num_elements * sizeof(int), cudaMemcpyDeviceToHost);
 
-  gettimeofday (&stop, NULL);
+  gettimeofday(&stop, NULL);
   fprintf(stderr, "Execution time for GPU = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
                       (stop.tv_usec - start.tv_usec) / (float)1000000));
 

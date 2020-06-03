@@ -67,13 +67,14 @@ __global__ void kernel_counting_sort(int *in, int *out, int n)
   unsigned int input_idx = blockIdx.x * blockDim.x + threadIdx.x;
   unsigned int stride = blockDim.x * gridDim.x;
 
+  unsigned int i, j;
   unsigned int diff, start_idx;
 
   /*calculate the starting indices for storing the sorted elements */
-  for (unsigned int i = 0; i < n; i++)
+  for (i = 0; i < n; i++)
   {
     if (i == 0){
-      diff = in[i]
+      diff = in[i];
       start_idx = 0;
     }
     else{
@@ -83,7 +84,7 @@ __global__ void kernel_counting_sort(int *in, int *out, int n)
   }
 
   /* generating sorted array */
-  for (unsigned int j = input_idx; j < diff; j += stride)
+  for (j = input_idx; j < diff; j += stride)
   {
     out[start_idx + j] = i;
     __syncthreads();
