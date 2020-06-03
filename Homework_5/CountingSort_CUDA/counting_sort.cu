@@ -10,7 +10,7 @@
 // #define DEBUG
 /* Do not change the range value */
 
-include <stdlib.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
@@ -111,10 +111,6 @@ int main(int argc, char **argv)
     /* Check the two results for correctness */
     printf("\nComparing CPU and GPU results\n");
     status = compare_results(sorted_array_reference, sorted_array_d, num_elements);
-    printf(sorted_array_reference);
-    printf(sorted_array_d);
-    printf(num_elements);
-    printf(status);
     if (status == 0)
         printf("Test passed\n");
     else
