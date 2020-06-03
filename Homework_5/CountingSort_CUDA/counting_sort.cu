@@ -25,6 +25,7 @@ void print_min_and_max_in_array(int *, int);
 void compute_on_device(int *, int *, int, int);
 int check_if_sorted(int *, int);
 int compare_results(int *, int *, int);
+void check_for_error(const char *);
 
 int main(int argc, char **argv)
 {
@@ -101,6 +102,10 @@ int main(int argc, char **argv)
     /* Check the two results for correctness */
     printf("\nComparing CPU and GPU results\n");
     status = compare_results(sorted_array_reference, sorted_array_d, num_elements);
+    printf(sorted_array_reference);
+    printf(sorted_array_d);
+    printf(num_elements);
+    printf(status);
     if (status == 0)
         printf("Test passed\n");
     else
