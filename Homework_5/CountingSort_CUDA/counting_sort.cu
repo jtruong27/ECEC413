@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     /* FIXME: Write function to sort elements in the array in parallel fashion.
      * The result should be placed in sorted_array_mt. */
     printf("\nSorting array on GPU\n");
-    sorted_array_d = (int *)malloc(num_elements * sizeof(int));
+    sorted_array_d = (int *) malloc(num_elements * sizeof(int));
     if (sorted_array_d == NULL) {
         perror("malloc");
         exit(EXIT_FAILURE);
@@ -173,11 +173,11 @@ void compute_on_device(int *input_array, int *sorted_array, int num_elements, in
   kernel_counting_sort<<<grid, thread_block>>>(device_output, device_scan, HISTOGRAM_SIZE);
   cudaDeviceSynchronize();
   check_for_error("Kernel Failure: Counting Sort");
+  gettimeofday(&stop, NULL);
 
   /* Copying results back from GPU */
   cudaMemcpy(sorted_array, device_output, num_elements * sizeof(int), cudaMemcpyDeviceToHost);
 
-  gettimeofday(&stop, NULL);
   fprintf(stderr, "Execution time for GPU = %fs\n", (float)(stop.tv_sec - start.tv_sec +\
                       (stop.tv_usec - start.tv_usec) / (float)1000000));
 
