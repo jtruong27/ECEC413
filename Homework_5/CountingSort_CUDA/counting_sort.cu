@@ -5,27 +5,16 @@
  * Compile as follows: make clean && make
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <sys/time.h>
-#include <string.h>
-#include <math.h>
-#include <limits.h>
-#include "counting_sort.h"
-#include "counting_sort_kernel.cu"
 
 /* Uncomment to spit out debug info */
 // #define DEBUG
+/* Do not change the range value */
+#define MIN_VALUE 0
+#define MAX_VALUE 255
 
-extern "C" int counting_sort_gold(int *, int *, int, int);
-int rand_int(int, int);
-void print_array(int *, int);
-void print_min_and_max_in_array(int *, int);
-void compute_on_device(int *, int *, int, int);
-int check_if_sorted(int *, int);
-int compare_results(int *, int *, int);
-void check_for_error(const char *);
+#define THREAD_BLOCK_SIZE 256   /* thread block size */
+#define NUM_BLOCKS 40           /* initialize number of blocks */
+
 
 int main(int argc, char **argv)
 {
