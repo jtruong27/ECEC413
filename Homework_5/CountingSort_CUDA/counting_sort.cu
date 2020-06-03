@@ -9,6 +9,10 @@
 /* Uncomment to spit out debug info */
 // #define DEBUG
 /* Do not change the range value */
+
+#include "counting_sort.h"
+#include "counting_sort_kernel.cu"
+
 #define MIN_VALUE 0
 #define MAX_VALUE 255
 
