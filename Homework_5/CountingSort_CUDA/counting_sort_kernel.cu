@@ -1,7 +1,92 @@
-/* Write GPU code to perform the step(s) involved in counting sort. 
+/* Write GPU code to perform the step(s) involved in counting sort.
  Add additional kernels and device functions as needed. */
 
-__global__ void counting_sort_kernel()
+/* Kernel Histogram Generation. Genrate bin for each element within the range */
+ __global__ void kernel_histogram(int *input_data, int *histogram, int num_elements, int histogram_size)
+ {
+   __shared__ unsigned int size[HISTOGRAM_SIZE];
+
+   int tid = threadIdx.x;
+
+   if (tid < histogram_size)
+     size[tid] = 0;
+
+  __syncthreads();
+
+  unsigned int input_idx = blockIdx.x * blockDim.x + tid;
+  unsigned stride = blockDim.x * gridDim.x;
+
+  while (input_idx < num_elements){
+    atomicAdd(&size[input_data[input_idx]], 1);
+    input_idx += stride;
+  }
+  __syncthreads();
+
+  /* Accumulating the historgram in shared memory into global memory */
+  if (tid < histogram_size)
+    atomicAdd(&histogram[tid], size[tid]);
+
+   return;
+ }
+
+/* Uses inclusive Prefix Scan of the bin elements */
+ __global__ void kernel_scan(int *in, int *out, int n)
+ {
+   /* allocating shared memory for the storing of the scan array */
+   extern __shared__ int share[];
+
+   int tid = threadIdx.x;
+
+   /* calculating starting indices for ping pong buffer*/
+   int ping_in = 1;
+   int ping_out = 0;
+
+   /* loads the array from global memory into shared memory */
+   share[ping_out * n + tid] = in[tid];
+
+   for (unsigned int i = 1; i < n; i = i * 2)
+   {
+     ping_out = 1 - ping_out;
+     ping_in = 1 -ping_out;
+     __syncthreads();
+
+     share[ping_out * n + tid] = share[ping_in * n + tid];
+
+     if (tid >= i)
+       share[ping_out * n + tid] = share[ping_in * n + tid];
+
+   }
+   __syncthreads();
+
+   out[tid] = share[ping_out * n + tid];
+   return;
+ }
+
+__global__ void kernel_counting_sort(int *in, int *out, int n)
 {
-    return;
+  unsigned int input_idx = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int stride = blockDim.x * gridDim.x;
+
+  unsigned int diff, start_idx;
+
+  /*calculate the starting indices for storing the sorted elements */
+  for (unsigned int i = 0; i < n; i++)
+  {
+    if (i == 0){
+      diff = in[i]
+      start_idx = 0;
+    }
+    else{
+      diff = in[i] - in[i - 1];
+      start_idx = in[i - 1];
+    }
+  }
+
+  /* generating sorted array */
+  for (unsigned int j = input_idx; j < diff; j += stride)
+  {
+    out[start_idx + j] = i;
+    __syncthreads();
+  }
+      return;
 }
