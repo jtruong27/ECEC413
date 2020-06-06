@@ -4,7 +4,7 @@
 /* Kernel Histogram Generation. Genrate bin for each element within the range */
  __global__ void kernel_histogram(int *input_data, int *histogram, int num_elements, int histogram_size)
  {
-   __tempd__ unsigned int size[HISTOGRAM_SIZE];
+   __shared__ unsigned int size[HISTOGRAM_SIZE];
 
    int tid = threadIdx.x;
 
