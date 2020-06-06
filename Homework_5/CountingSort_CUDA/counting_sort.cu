@@ -20,11 +20,6 @@
 #include "counting_sort.h"
 #include "counting_sort_kernel.cu"
 
-#define MIN_VALUE 0
-#define MAX_VALUE 255
-
-#define THREAD_BLOCK_SIZE 256   /* thread block size */
-#define NUM_BLOCKS 40           /* initialize number of blocks */
 
 extern "C" int counting_sort_gold(int *, int *, int, int);
 int rand_int(int, int);

@@ -4,7 +4,7 @@
 /* Kernel Histogram Generation. Genrate bin for each element within the range */
  __global__ void kernel_histogram(int *input_data, int *histogram, int num_elements, int histogram_size)
  {
-   __shared__ unsigned int size[HISTOGRAM_SIZE];
+   __tempd__ unsigned int size[HISTOGRAM_SIZE];
 
    int tid = threadIdx.x;
 
@@ -14,7 +14,7 @@
   __syncthreads();
 
   unsigned int input_idx = blockIdx.x * blockDim.x + tid;
-  unsigned stride = blockDim.x * gridDim.x;
+  unsigned int stride = blockDim.x * gridDim.x;
 
   while (input_idx < num_elements){
     atomicAdd(&size[input_data[input_idx]], 1);
@@ -22,7 +22,7 @@
   }
   __syncthreads();
 
-  /* Accumulating the historgram in shared memory into global memory */
+  /* Accumulating the historgram in tempd memory into global memory */
   if (tid < histogram_size)
     atomicAdd(&histogram[tid], size[tid]);
 
@@ -32,8 +32,8 @@
 /* Uses inclusive Prefix Scan of the bin elements */
  __global__ void kernel_scan(int *in, int *out, int n)
  {
-   /* allocating shared memory for the storing of the scan array */
-   extern __shared__ int share[];
+   /* allocating tempd memory for the storing of the scan array */
+   extern __shared__ int temp[];
 
    int tid = threadIdx.x;
 
@@ -41,8 +41,8 @@
    int ping_in = 1;
    int ping_out = 0;
 
-   /* loads the array from global memory into shared memory */
-   share[ping_out * n + tid] = in[tid];
+   /* loads the array from global memory into tempd memory */
+   temp[ping_out * n + tid] = in[tid];
 
    for (unsigned int i = 1; i < n; i = i * 2)
    {
@@ -50,15 +50,15 @@
      ping_in = 1 -ping_out;
      __syncthreads();
 
-     share[ping_out * n + tid] = share[ping_in * n + tid];
+     temp[ping_out * n + tid] = temp[ping_in * n + tid];
 
      if (tid >= i)
-       share[ping_out * n + tid] = share[ping_in * n + tid];
+       temp[ping_out * n + tid] = temp[ping_in * n + tid];
 
    }
    __syncthreads();
 
-   out[tid] = share[ping_out * n + tid];
+   out[tid] = temp[ping_out * n + tid];
    return;
  }
 
